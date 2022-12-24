@@ -135,9 +135,8 @@ function connect() {
         app.handleChat(message);
     });
 
-    socket.on('homeError',message =>{
+    socket.on('homerror',message =>{
         console.log("homeError reached");
-        // alert("error: ",message);
     });
 
 

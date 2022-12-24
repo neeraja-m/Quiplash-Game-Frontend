@@ -236,7 +236,7 @@ function errorHandler(socket,response){
   
   if(!respRes){
     console.log("if reached");
-    socket.emit('homeError',respMsg);
+    socket.emit('homerror',respMsg);
     console.log("finished");
   }
   // console.log(response.result);

@@ -9,7 +9,23 @@
         <div v-if="connected">
             <%- include('homescreen'); -%>
         </div>
-        <div v-else>
+       
+        <div v-else-if="gameState.state == 0">
+            <%- include('lobby') -%>
+        </div>
+        <div v-else-if="gameState.state == 1 ">
+            <%- include('submitPrompt') -%>
+        </div>
+        <div v-else-if="gameState.state == 2 ">
+            <%- include('answerPrompt') -%>
+        </div>
+        <div v-else-if="gameState.state == 3 ">
+            <%- include('revealAnswers') -%>
+        </div>
+        <div v-else-if="gameState.state == 4 ">
+            <%- include('scoreboard') -%>
+        </div>
+        <div v-else >
             <p>Connecting...</p>
         </div>
     </div>
