@@ -30,8 +30,7 @@ app.get('/display', (req, res) => {
 });
 
 let players = new Map(); //holds active players
-let nextPlayerNum=0;
-let playersToSockets = new Map();
+let playersToSockets = new Map(); //(username,socket)
 let socketsToPlayers = new Map();
 let audience = new Map(); //holds audience members
 let audienceToSockets = new Map();
@@ -62,13 +61,35 @@ io.on('connection', socket => {
 
   socket.on('register', (username,password)=>{
     console.log('registering',username,password);
-    handleRegister(username,password);
+    handleRegister(socket,username,password);
   });
 
-  socket.on('login', ()=>{
-    console.log('logging in');
+  socket.on('login', (username,password)=>{
+    console.log('logging in',username);
+    handleLogin(socket,username,password);
 
+  });
+
+  socket.on('submitPrompt', (username,prompt)=>{
+    console.log(prompt,' submitted by ',username);
+    handleSubmitPrompt(username,prompt);
+  });
+
+  socket.on('promptAnswer', (username,prompt,answer)=>{
+    console.log(username, 'answered ',prompt, answer);
+    handleAnswer(prompt,answer,username);
+  });
+
+  socket.on('vote', (username,answer)=>{
+    console.log('vote for ', username,answer);
+    handleVote(username,answer);
   })
+
+  socket.on('advance', ()=>{
+    console.log('advancing');
+    handleAdvance();
+  });
+
   //Handle on chat message received
   socket.on('chat', message => {
     handleChat(message);
@@ -81,7 +102,8 @@ io.on('connection', socket => {
 
 });
 
-function handleRegister(username,password){
+///////////////for all handles show alert if there is error///////////////////
+function handleRegister(socket,username,password){
   console.log("handle register");
   console.log(username,password);
 
@@ -94,12 +116,134 @@ function handleRegister(username,password){
       body: JSON.stringify(payload),
       headers: { 'x-functions-key' : APP_KEY  }
   }).then(res => res.json())
-    .then(json => console.log(json))
+    .then(json => errorHandler(socket,json))
     .catch(function(err) {
       console.log(err)
     });
  
 }
+
+function handleLogin(socket,username,password){
+  console.log("handle login");
+  console.log(username,password);
+
+    let payload = {
+      "username" : username,"password":password
+  };
+
+  fetch(prefix+'/player/login', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+      headers: { 'x-functions-key' : APP_KEY  }
+  }).then(res => res.json())
+    .then(json => errorHandler(socket,json))
+    .catch(function(err) {
+      console.log(err)
+    });
+ 
+}
+
+
+function handleSubmitPrompt(username,password,prompt){
+  console.log("handle submit prompt");
+  console.log(username,password,prompt);
+
+    let payload = {
+      "text" : prompt,"username":username,"password":password
+  };
+
+  fetch(prefix+'/player/create', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+      headers: { 'x-functions-key' : APP_KEY  }
+  }).then(res => res.json())
+    .then(json => errorHandler(json))
+    .catch(function(err) {
+      console.log(err)
+    });
+ 
+}
+
+
+function handleAnswer(prompt,answer,username){
+  console.log("handle answer");
+  console.log(username,password);
+
+    let payload = {
+      "username" : username,"password":password
+  };
+
+  fetch(prefix+'/player/login', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+      headers: { 'x-functions-key' : APP_KEY  }
+  }).then(res => res.json())
+    .then(json => errorHandler(json))
+    .catch(function(err) {
+      console.log(err)
+    });
+ 
+}
+
+
+
+function handleVote(username,answer){
+  console.log("handle vote");
+  console.log(username,password);
+
+    let payload = {
+      "username" : username,"password":password
+  };
+
+  fetch(prefix+'/player/login', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+      headers: { 'x-functions-key' : APP_KEY  }
+  }).then(res => res.json())
+    .then(json => errorHandler(json))
+    .catch(function(err) {
+      console.log(err)
+    });
+ 
+}
+
+
+function handleAdvance(){
+  console.log("handle advance");
+  console.log(username,password);
+
+    let payload = {
+      "username" : username,"password":password
+  };
+
+  fetch(prefix+'/player/login', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+      headers: { 'x-functions-key' : APP_KEY  }
+  }).then(res => res.json())
+    .then(json => errorHandler(json))
+    .catch(function(err) {
+      console.log(err)
+    });
+ 
+}
+
+//if false then show that in alert
+function errorHandler(socket,response){
+  let respMsg = response.msg;
+  let respRes = response.result;
+  console.log("handling response: ",respMsg);
+  
+  if(!respRes){
+    console.log("if reached");
+    socket.emit('homeError',respMsg);
+    console.log("finished");
+  }
+  // console.log(response.result);
+
+}
+
+
 //Start server
 if (module === require.main) {
   startServer();

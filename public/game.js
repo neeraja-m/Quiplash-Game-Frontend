@@ -45,21 +45,17 @@ var app = new Vue({
             socket.emit('admin',command);
         },
     
-        register(username,password){ //to register the player
-            this.username = username;
-            this.password=password;
-        
-            socket.emit('register',"test","testtestt");
-            console.log("Registering user ", username);
+        register(){ //to register the player
+            console.log("Registering user ", this.username,this.password);
+
+            socket.emit('register',this.username,this.password);
             this.username = '';
             this.password='';
 
         },
-        login(username,password){ //to login
-            this.username = username;
-            this.password=password;
-            socket.emit('login',username,password);
-            console.log("Attempting to join: ", username);
+        login(){ //to login
+            console.log("Attempting to login: ", this.username);
+            socket.emit('login',this.username,this.password);
             this.username = '';
             this.password='';
         },
@@ -88,21 +84,26 @@ var app = new Vue({
             console.log("Retrieving prompts");
 
         },
-        promptAnswer(answer,username){
-            socket.emit('promptAnswer',answer,username);
+        promptAnswer(username,prompt,answer){
+            socket.emit('promptAnswer',prompt,answer,username);
             console.log("Prompt answered by ",username);
 
         },
-        vote(answer){
-            socket.emit('vote',answer);
-            console.log("Players voted for ",answer);
+        vote(username,answer){
+            socket.emit('vote',username,answer);
+            console.log("Players voted for ",username,answer);
 
         },
         advance(){
             socket.emit('advance');
             console.log("Advancing game");
 
-        }
+        },
+        submitPrompt(){
+            socket.emit('submitPrompt',username,password,prompt);
+            console.log("submitting prompt");
+        },
+    
     }
 });
 
@@ -133,6 +134,12 @@ function connect() {
     socket.on('chat', function(message) {
         app.handleChat(message);
     });
+
+    socket.on('homeError',message =>{
+        console.log("homeError reached");
+        // alert("error: ",message);
+    });
+
 
 
 }
