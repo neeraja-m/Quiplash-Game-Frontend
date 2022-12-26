@@ -15,7 +15,7 @@ var app = new Vue({
         password:'',
         messages: [],
         chatmessage: '',
-        playerState: { username: '', state: 0, score: 0 },
+        playerState: { username: '', state: 0, score: 0 ,playerNumber:''},
         gameState: { state: false },
         playerList: {},
         audienceList:{},
@@ -116,6 +116,18 @@ function connect() {
         console.log("===========connected============")
         //Set connected state to true
         app.connected = true;
+        console.log(app.gameState.state);
+     
+
+
+    });
+
+    socket.on('logged', () =>{
+        console.log("===========connected============")
+        //Set connected state to true
+        app.gameState.state = 0;
+        console.log(app.gameState.state);
+
     });
 
     //Handle connection error
@@ -136,7 +148,8 @@ function connect() {
     });
 
     socket.on('homerror',message =>{
-        console.log("homeError reached");
+        
+        //show 
     });
 
 

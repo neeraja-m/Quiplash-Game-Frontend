@@ -6,10 +6,9 @@
     <h2 class="title">QUIPLASH</h2>
 
     <div id="game">
-        <div v-if="connected">
+        <div v-if="connected" >
             <%- include('homescreen'); -%>
         </div>
-       
         <div v-else-if="gameState.state == 0">
             <%- include('lobby') -%>
         </div>
@@ -25,9 +24,7 @@
         <div v-else-if="gameState.state == 4 ">
             <%- include('scoreboard') -%>
         </div>
-        <div v-else >
-            <p>Connecting...</p>
-        </div>
+    
     </div>
 
     <%- include('footer'); -%>

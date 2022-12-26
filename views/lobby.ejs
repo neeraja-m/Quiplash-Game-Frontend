@@ -1,0 +1,14 @@
+
+<div v-if='gameState.state==0'></div>
+    <p>Waiting for other players</p>
+    <div class="row">
+        <div v-for="player of playerList" class="col-sm-2 text-center">
+            <div class = "player">
+                <strong> Player {{playerState.username}} </strong>
+            </div>
+        </div>
+    </div>
+    <div v-if="playerState.playerNumber==1">
+        <button class="btn btn-lg btn-success" @click="admin('start')">Start game</button>
+    </div> 
+</div>

@@ -29,7 +29,7 @@ app.get('/display', (req, res) => {
   res.render('display');
 });
 
-let players = new Map(); //holds active players
+let playerList = new Map(); //holds active players
 let playersToSockets = new Map(); //(username,socket)
 let socketsToPlayers = new Map();
 let audience = new Map(); //holds audience members
@@ -37,6 +37,7 @@ let audienceToSockets = new Map();
 let socketsToAudience = new Map();
 let gameState = { state: false };
 let timer = null;
+let nextPlayerNumber = 0;
 
 //player states: 0-playing, 1-audience 
 //game states: 0-not started, 1-entering prompts, 2-completed answers, 3-voting round,4-winning 
@@ -140,6 +141,22 @@ function handleLogin(socket,username,password){
     .catch(function(err) {
       console.log(err)
     });
+
+    //if successful login:
+    if(nextPlayerNumber<7){ //if max players not reached yet
+    console.log("adding a new player ",username);
+    playerList.set(username,{ username: username, state: 1, score: 0,playerNumber:nextPlayerNumber });
+    nextPlayerNumber++;
+    playersToSockets.set(username,socket);
+    socketsToPlayers.set(socket,username);
+    }else{ //if max players reached then make audience member
+    audience.set(username,{ username: username, state: 1, score: 0,playerNumber:nextPlayerNumber });
+    nextPlayerNumber++;
+    audienceToSockets.set(username,socket);
+    socketsToAudience.set(socket,username);
+    }
+
+    socket.emit('logged');
  
 }
 
@@ -164,24 +181,10 @@ function handleSubmitPrompt(username,password,prompt){
  
 }
 
-
 function handleAnswer(prompt,answer,username){
   console.log("handle answer");
-  console.log(username,password);
 
-    let payload = {
-      "username" : username,"password":password
-  };
-
-  fetch(prefix+'/player/login', {
-      method: 'POST',
-      body: JSON.stringify(payload),
-      headers: { 'x-functions-key' : APP_KEY  }
-  }).then(res => res.json())
-    .then(json => errorHandler(json))
-    .catch(function(err) {
-      console.log(err)
-    });
+    
  
 }
 
@@ -191,41 +194,20 @@ function handleVote(username,answer){
   console.log("handle vote");
   console.log(username,password);
 
-    let payload = {
-      "username" : username,"password":password
-  };
-
-  fetch(prefix+'/player/login', {
-      method: 'POST',
-      body: JSON.stringify(payload),
-      headers: { 'x-functions-key' : APP_KEY  }
-  }).then(res => res.json())
-    .then(json => errorHandler(json))
-    .catch(function(err) {
-      console.log(err)
-    });
  
 }
 
 
 function handleAdvance(){
+  //todo: handle rounds
   console.log("handle advance");
-  console.log(username,password);
-
-    let payload = {
-      "username" : username,"password":password
-  };
-
-  fetch(prefix+'/player/login', {
-      method: 'POST',
-      body: JSON.stringify(payload),
-      headers: { 'x-functions-key' : APP_KEY  }
-  }).then(res => res.json())
-    .then(json => errorHandler(json))
-    .catch(function(err) {
-      console.log(err)
-    });
- 
+  if(gameState.state==0){
+    gameState.state =1;
+  }else if (gameState.state ==1){
+    gameState.state=2;
+  }else if(gameState.state==3){
+    gameState.state=4;
+  }
 }
 
 //if false then show that in alert

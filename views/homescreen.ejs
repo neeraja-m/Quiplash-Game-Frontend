@@ -2,10 +2,7 @@
 
 <div v-if='gameState.state==false'>
 
-    
-      
         <div class=" text-center">
-            <b-row class="mb-10"> 
                 <div class="col">
             <p>Enter your details below</p>
             <input type ="text" v-model="username" placeholder="Username" />
@@ -14,25 +11,20 @@
                 <p><button class="btn btn-lg btn-primary" @click="register">register</button></p>
                 <p><button class="btn btn-lg btn-primary" @click="login">login</button></p>
                 </div>
-            </b-row>
 
-            
           </div>
-   
-    
-</div>
 
-<div v-else>
+</div>
+<!-- <div v-else-if='gameState.state==true'></div>
     <p>Waiting for other players</p>
     <div class="row">
-        <div v-for="player of players" class="col-sm-2 text-center">
+        <div v-for="player of playerList" class="col-sm-2 text-center">
             <div class = "player">
-                <strong> Player {{player.name}} </strong>
+                <strong> Player {{player.username}} </strong>
             </div>
         </div>
     </div>
-    <div v-if="me.name==1">
+    <div v-if="playerState.playerNumber==1">
         <button class="btn btn-lg btn-success" @click="admin('start')">Start game</button>
     </div> 
-</div>
-
+</div> -->
