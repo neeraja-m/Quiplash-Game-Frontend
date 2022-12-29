@@ -34,7 +34,7 @@ var app = new Vue({
             this.playerState = data.playerState;
             this.gameState = data.gameState;
             this.playerList = data.playerList
-            this.audienceList = data.audienceList;
+            // this.audienceList = data.audienceList;
         },
         chat() {
             socket.emit('chat',this.chatmessage);
@@ -150,6 +150,11 @@ function connect() {
     socket.on('homerror',message =>{
         
         //show 
+    });
+
+
+    socket.on('state',function(data){
+        app.updateState(data);
     });
 
 

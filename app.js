@@ -38,6 +38,8 @@ let socketsToAudience = new Map();
 let gameState = { state: false };
 let timer = null;
 let nextPlayerNumber = 0;
+let numToPlayers = new Map();
+let playersToNum = new Map();
 
 //player states: 0-playing, 1-audience 
 //game states: 0-not started, 1-entering prompts, 2-completed answers, 3-voting round,4-winning 
@@ -68,6 +70,7 @@ io.on('connection', socket => {
   socket.on('login', (username,password)=>{
     console.log('logging in',username);
     handleLogin(socket,username,password);
+    updateAll();
 
   });
 
@@ -145,19 +148,45 @@ function handleLogin(socket,username,password){
     //if successful login:
     if(nextPlayerNumber<7){ //if max players not reached yet
     console.log("adding a new player ",username);
-    playerList.set(username,{ username: username, state: 1, score: 0,playerNumber:nextPlayerNumber });
+    playerList.set(nextPlayerNumber ,{ username: username, state: 1, score: 0,playerNumber:nextPlayerNumber});
+    playersToNum.set(username,nextPlayerNumber);
+    numToPlayers.set(nextPlayerNumber,username);
+    gameState.state=0;
     nextPlayerNumber++;
     playersToSockets.set(username,socket);
     socketsToPlayers.set(socket,username);
     }else{ //if max players reached then make audience member
-    audience.set(username,{ username: username, state: 1, score: 0,playerNumber:nextPlayerNumber });
+    audience.set(nextPlayerNumber,{ username: username, state: 1, score: 0});
     nextPlayerNumber++;
     audienceToSockets.set(username,socket);
     socketsToAudience.set(socket,username);
     }
 
+    for(let [playerNumber,playerState] of playerList) {
+      console.log("player " , playerNumber);
+    }    
+  
+
     socket.emit('logged');
  
+}
+
+
+//Update state of all players
+function updateAll() {
+  console.log('Updating all players');
+  for(let [username,socket] of playersToSockets) {
+      updatePlayer(socket);
+  }
+}
+
+//Update one player
+function updatePlayer(socket) {
+  const playerName = socketsToPlayers.get(socket);
+  const playerNum = playersToNum.get(playerName)
+  const thePlayer = playerList.get(playerNum);
+  const data = { gameState: gameState, playerState: thePlayer, playerList: Object.fromEntries(playerList) }; 
+  socket.emit('state',data);
 }
 
 
