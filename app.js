@@ -7,8 +7,10 @@ const LOCAL_SERVER="http://localhost:7071/api"
 const CLOUD_SERVER="https://quiplash-njm1g20.azurewebsites.net/api"
 const prefix =  CLOUD_SERVER;
 
+const { ifError } = require('assert');
 const { AsyncLocalStorage } = require('async_hooks');
 const { error } = require('console');
+const { json } = require('express');
 //Set up express
 const express = require('express');
 const app = express();
@@ -37,10 +39,12 @@ let socketsToPlayers = new Map(); //(socket, username)
 let audienceList = new Map(); //holds audience members
 let audienceToSockets = new Map(); //(username,socket)
 let socketsToAudience = new Map(); //(socket,username)
-let gameState = { state: false };
-let timer = null;
+let gameState = { state: false }; 
 let regSucc= false;
-// let loginSucc = false;
+let activePromptstoVotes = new Map(); //(prompt, true/false) 
+let promptToAnswer = new Map(); //(prompt, (answer,socket)) prompt and who submitted the answer
+let answerToSocket = new Map(); //(answer, socket) 
+let promptToSocket = new Map(); //(prompt,socket) which player was assigned what prompt
 let nextPlayerNumber = 0;
 let numToAll = new Map(); //(player number, username)
 let allToNum = new Map(); //(username, player number)
@@ -193,33 +197,74 @@ function updateIndAud(socket) {
 }
 
 
-function handleSubmitPrompt(prompt){
+function handleSubmitPrompt(prompt,socket){
+  let username="";
+  let password=""; //retrieve from db?
   console.log("handle submit prompt", prompt);
-  // console.log(username,password,prompt);
+  if(isPlayer(socket)){
+    username = socketsToPlayers.get(socket);
+  }else{
+    username = socketsToAudience.get(socket);
+  }
+    let payload = {
+      "text" : prompt,"username":username,"password":password
+  };
 
-  //   let payload = {
-  //     "text" : prompt,"username":username,"password":password
-  // };
+  fetch(prefix+'/player/create', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+      headers: { 'x-functions-key' : APP_KEY  }
+  }).then(res => res.json())
+    .then(json => respHandler(json))
+    .catch(function(err) {
+      console.log(err)
+    });
 
-  // fetch(prefix+'/player/create', {
-  //     method: 'POST',
-  //     body: JSON.stringify(payload),
-  //     headers: { 'x-functions-key' : APP_KEY  }
-  // }).then(res => res.json())
-  //   .then(json => respHandler(json))
-  //   .catch(function(err) {
-  //     console.log(err)
-  //   });
- 
+  // if prompt successfully stored:
+  if(isPlayer(socket)){
+    const playerName = socketsToPlayers.get(socket);
+    const playerNum = allToNum.get(playerName)
+    const thePlayer = playerList.get(playerNum);
+    thePlayer.state=2; 
+    //if player is in state 2 they need to answer next once sumission done
+  }else{
+    const audName = socketsToAudience.get(socket);
+    const audNum = allToNum.get(audName)
+    const theAud= audienceList.get(audNum);
+    theAud.state=2;
+    //if audience is in state 2 they see the waiting screen until vote
+  }
+
+  activePromptstoVotes.set(prompt,false); 
+
+  assignPrompts();
 }
 
 function handleAnswer(prompt,answer,username){
   console.log("handle answer");
+
 }
 
 function handleVote(username,answer){
   console.log("handle vote");
   console.log(username,password);
+}
+
+function isPlayer(socketToCheck){
+  let isplayer=false;
+
+  for(let [username,socket] in playerList){
+    if(socketToCheck=socket){
+      isplayer = true;
+    }
+  }
+  for(let [username,socket] in audienceList){
+    if(socketToCheck=socket){
+      isplayer = false;
+    }
+  }
+  return isplayer;
+  
 }
 
 
@@ -250,6 +295,8 @@ function respHandler(socket,response){
   }
 }
 
+
+
 function handleAdmin(player,action) {
   console.log("reached handleamdin");
   if(player !== 0) {
@@ -269,6 +316,48 @@ function handleAdmin(player,action) {
   }else {
       console.log('Unknown admin action: ' + action); 
   }
+}
+function startGame(){
+  //initialise all players
+  for(let [username, socket] in playerList){
+  const playerName = socketsToPlayers.get(socket);
+  const playerNum = allToNum.get(playerName)
+  const thePlayer = playerList.get(playerNum);
+  thePlayer.state=1; 
+  }
+  for(let [username,socket] in audienceList){
+    const audName = socketsToAudience.get(socket);
+    const audNum = allToNum.get(audName)
+    const theAud= audienceList.get(audNum);
+    theAud.state=1;
+  }
+
+}
+
+function assignPrompts(){
+  //if 8 players, 4 prompts needed 
+   //2 from api, 2 from just submitted
+  let n = playerList.size;
+  let totalPromptsNeeded = Math.ceil(n/2); 
+  let numbertoRetrive =  Math.ceil(totalPromptsNeeded/2);
+  let payload = {
+    "prompts":numbertoRetrive};
+
+fetch(prefix+'/player/get', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+    headers: { 'x-functions-key' : APP_KEY  }
+}).then(res => res.json())
+  .then(json => respHandler(json))
+  .catch(function(err) {
+    console.log(err)
+  });
+  let prompts=[]
+  for(var i in json){
+  console.log(i);
+  prompts.push([i, json_data [i]]);
+  }
+
 }
 
 
@@ -291,7 +380,7 @@ io.on('connection', socket => {
 
   socket.on('submitPrompt', (prompt)=>{
     console.log(prompt);
-    handleSubmitPrompt(prompt);
+    handleSubmitPrompt(prompt,socket);
     updateAll();
   });
 
