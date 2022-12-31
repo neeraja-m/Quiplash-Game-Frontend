@@ -11,6 +11,7 @@ var app = new Vue({
     data: {
         connected: false,
         error:false,
+        prompt:'',
         username:'',
         password:'',
         messages: [],
@@ -34,7 +35,7 @@ var app = new Vue({
             this.playerState = data.playerState;
             this.gameState = data.gameState;
             this.playerList = data.playerList
-            // this.audienceList = data.audienceList;
+            this.audienceList = data.audienceList;
         },
         chat() {
             socket.emit('chat',this.chatmessage);
@@ -100,11 +101,16 @@ var app = new Vue({
 
         },
         submitPrompt(){
-            socket.emit('submitPrompt',username,password,prompt);
-            console.log("submitting prompt");
+            socket.emit('submitPrompt',this.prompt);
+            console.log("submitting prompt ",prompt);
+            this.prompt='';
         },
+        fail(message){
+            this.error = message;
+            setTimeout(clearError,3000);
+        
     
-    }
+    }}
 });
 
 function connect() {
@@ -123,9 +129,8 @@ function connect() {
     });
 
     socket.on('logged', () =>{
-        console.log("===========connected============")
         //Set connected state to true
-        app.gameState.state = 0;
+        // app.gameState.state = 0;
         console.log(app.gameState.state);
 
     });
@@ -156,6 +161,10 @@ function connect() {
     socket.on('state',function(data){
         app.updateState(data);
     });
+
+    socket.on('fail',function(message){
+        app.fail(message);
+    })
 
 
 

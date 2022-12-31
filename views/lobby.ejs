@@ -1,13 +1,26 @@
 
-    <p>Waiting for other players</p>
-    <div class="row">
-        <div v-for="player of playerList" class="col-sm-2 text-center">
-            <div class = "player">
-                <strong> Player {{player.username}} </strong>
+    <div class="text-center">
+        <div class="col text-center" style='padding-top:75px ; font-size:18px ; color: #5b3508; text-align: center;'>
+    <p style="font-size: 27px; font-weight: bold;"> WAITING FOR PLAYERS </p> 
+
+    <div class="row" style=" margin-top: 50px; ">
+        <p style="font-weight: bold;color:rgb(79, 140, 18)">PLAYERS</p>
+        <div v-for="player of playerList" class="col-sm-3 text-center">
+            <div class = "player" style="color: rgb(18, 62, 77); text-align: center;">
+                <p> {{player.username}} </p>
+            </div>
+        </div>
+    </div>
+    <div class="col text-center" style=" margin-top: 50px; text-align: center;">
+        <p style="font-weight: bold; color:rgb(79, 140, 18)">AUDIENCE</p>
+        <div v-for="aud of audienceList" class="col-sm-3 text-center">
+            <div class = "aud" style="color: rgb(18, 62, 77); text-align: center;">
+                <p> {{aud.username}} </p>
             </div>
         </div>
     </div>
     <div v-if="playerState.playerNumber===0">
-        <button class="btn btn-lg btn-success" @click="admin('start')">Start game</button>
+        <button class="btn btn-lg btn-success" @click="admin('START')" style='background-color:rgb(116, 188, 44);  border-color: rgb(93, 152, 35); border-width: 2px;'>START GAME</button>
     </div> 
+    </div>
 

@@ -14,7 +14,7 @@
             <div v-else-if="gameState.state === 0">
                 <%- include('lobby') -%>
             </div>
-            <div v-else-if="gameState.state == 1 ">
+            <div v-else-if="gameState.state === 1 ">
                 <%- include('submitPrompt') -%>
             </div>
             <div v-else-if="gameState.state == 2 ">

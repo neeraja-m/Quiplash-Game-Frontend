@@ -1,0 +1,12 @@
+<div v-if="playerState.playerNumber===0">
+    <button class="btn btn-lg btn-success" @click="admin('start')">Advance</button>
+</div> 
+<div class=" text-center">
+    <div class="col">
+<p>Enter a prompt </p>
+<input type ="text" v-model="prompt" placeholder="" />
+
+    <p><button class="btn btn-lg btn-primary" @click="submitPrompt"></button>Submit Prompt</button></p>
+    </div>
+
+</div>
