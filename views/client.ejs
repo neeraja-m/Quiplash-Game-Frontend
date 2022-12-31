@@ -12,10 +12,10 @@
                  <%- include('homescreen'); -%> 
             </div>
             <div v-else-if="gameState.state === 0">
-                <%- include('lobby') -%>
+                <%- include('lobby'); -%>
             </div>
-            <div v-else-if="gameState.state === 1 ">
-                <%- include('submitPrompt') -%>
+            <div v-else-if="gameState.state ===1 ">
+                <%- include('submitPrompt'); -%>
             </div>
             <div v-else-if="gameState.state == 2 ">
                 <%- include('answerPrompt') -%>

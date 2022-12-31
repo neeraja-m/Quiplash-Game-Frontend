@@ -166,10 +166,13 @@ function updateAll() {
   console.log('Updating all players');
   for(let [username,socket] of playersToSockets) {
       updateIndPlayer(socket);
+      console.log(username);
+
   }
   for(let [username,socket] of audienceToSockets) {
     updateIndAud(socket);
-}
+    console.log(username);
+  }
 }
 
 //Update one player
@@ -223,7 +226,7 @@ function handleVote(username,answer){
 function handleAdvance(){
   //todo: handle rounds
   console.log("handle advance");
-  if(gameState.state==0){
+  if(gameState.state===0){
     gameState.state =1;
   }else if (gameState.state ==1){
     gameState.state=2;
@@ -245,9 +248,8 @@ function respHandler(socket,response){
   }else{
     return true;
   }
-  // console.log(response.result);
-
 }
+
 function handleAdmin(player,action) {
   console.log("reached handleamdin");
   if(player !== 0) {
@@ -256,9 +258,15 @@ function handleAdmin(player,action) {
   }
 
   if(action == 'start' && gameState.state === 0) {
+    console.log( "starting game"); 
+
       gameState.state=1;
+      console.log(gameState)
       
-  } else {
+  // } else if (action == 'advance' )  {
+  //   console.log( action); 
+  //   handleAdvance();
+  }else {
       console.log('Unknown admin action: ' + action); 
   }
 }
@@ -271,6 +279,7 @@ io.on('connection', socket => {
   socket.on('register', (username,password)=>{
     console.log('registering',username,password);
     handleRegister(socket,username,password);
+    updateAll();
   });
 
   socket.on('login', (username,password)=>{
@@ -289,21 +298,29 @@ io.on('connection', socket => {
   socket.on('promptAnswer', (username,prompt,answer)=>{
     console.log(username, 'answered ',prompt, answer);
     handleAnswer(prompt,answer,username);
+    updateAll();
+
   });
 
   socket.on('vote', (username,answer)=>{
     console.log('vote for ', username,answer);
     handleVote(username,answer);
+    updateAll();
+
   })
 
   socket.on('advance', ()=>{
     console.log('advancing');
     handleAdvance();
+    updateAll();
+
   });
 
   //Handle on chat message received
   socket.on('chat', message => {
     handleChat(message);
+    updateAll();
+
   });
   socket.on('admin', action => {
     if(!socketsToPlayers.has(socket)) return;

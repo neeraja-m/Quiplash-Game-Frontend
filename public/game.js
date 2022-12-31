@@ -106,8 +106,9 @@ var app = new Vue({
             this.prompt='';
         },
         fail(message){
-            this.error = message;
-            setTimeout(clearError,3000);
+            // this.error = message;
+            // setTimeout(clearError,3000);
+            // this.error="";
         
     
     }}
@@ -130,7 +131,6 @@ function connect() {
 
     socket.on('logged', () =>{
         //Set connected state to true
-        // app.gameState.state = 0;
         console.log(app.gameState.state);
 
     });
