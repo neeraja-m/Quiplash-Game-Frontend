@@ -14,6 +14,7 @@ var app = new Vue({
         prompt:'',
         username:'',
         password:'',
+        answer:'',
         messages: [],
         chatmessage: '',
         playerState: { username: '', state: 0, score: 0 ,playerNumber:''},
@@ -68,25 +69,9 @@ var app = new Vue({
             socket.emit('leaderboard',n);
             console.log("Retrieving leaderboard");
         },
-        createPrompt(prompt,username){ //create and store prompt
-            socket.emit('createPrompt',prompt);
-            console.log("Creating prompt: ", prompt);
-        },
-        editPrompt(prompt,username){ //edit stored prompt
-            socket.emit('editPrompt',prompt,username);
-            console.log("Editing prompt from user ", username);
-        },
-        deletePrompt(prompt,username){ //delete stored prompt
-            socket.emit('deletePrompt',username,password);
-            console.log("Deleting prompt from user: ", username);
-        },
-        getPrompt(n){ //get n random prompts
-            socket.emit('getPrompt',n);
-            console.log("Retrieving prompts");
-
-        },
-        promptAnswer(username,prompt,answer){
-            socket.emit('promptAnswer',prompt,answer,username);
+    
+        promptAnswer(){
+            socket.emit('promptAnswer',this.answer,this.username);
             console.log("Prompt answered by ",username);
 
         },

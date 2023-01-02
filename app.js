@@ -298,7 +298,7 @@ function handleAdmin(player,action) {
   } else if (action == 'advance' && gameState.state==1 )  {
     gameState.state=2;
     console.log(gameState)
-    assignPrompts();
+     assignPrompts();
   }else {
       console.log('Unknown admin action: ' + action); 
   }
@@ -321,78 +321,103 @@ function startGame(){
 }
 
 function assignPrompts(){
+
   console.log("assigning prompts");
   //if 8 players, 4 prompts needed 
    //2 from api, 2 from just submitted
  
-  let payload = {
-    "prompts":numbertoRetrive};
+   let n = playerList.size;
+   let totalPromptsNeeded = Math.ceil(n/2); 
+   let numbertoRetrieve =  Math.ceil(totalPromptsNeeded/2);
+   let numbertoKeep = totalPromptsNeeded -numbertoRetrieve;
+   let i=0;
+
+  let payload = {"prompts":numbertoRetrieve};
   
-  console.log(n, " players ", totalPromptsNeeded, " needed", numbertoRetrive, " retreiving");
+  console.log(n, " players ", totalPromptsNeeded, " needed", numbertoRetrieve, " retreiving");
   fetch(prefix+'/prompts/get', {
       method: 'POST',
       body: JSON.stringify(payload),
       headers: { 'x-functions-key' : APP_KEY  }
   }).then(res => res.json())
-    .then(json => parsePrompts(json))
+    .then(json => helper(json,totalPromptsNeeded,numbertoKeep))
     .catch(function(err) {
       console.log(err)
     });
 
+      
+  
+}
 
+async function helper(json,totalPromptsNeeded,numbertoKeep){
+  const result = await parsePrompts(json);
 
-    let n = playerList.size;
-    let totalPromptsNeeded = Math.ceil(n/2); 
-    let numbertoRetrive =  Math.ceil(totalPromptsNeeded/2);
-    let numbertoKeep = totalPromptsNeeded -numbertoRetrive;
-    let i=0;
+  console.log("agp: " ,allGamePrompts.size);
 
-    for(let [prompt,assignCount] in allGamePrompts){
-      if(assignCount==-1 && i< numbertoKeep){
-        allGamePrompts.set(prompt,0);
-        activeGamePrompts.set(prompt,0)
-        console.log("using prompt from current ", p);
-        i++;
-      }
-    }
+  for(let [prompt,assignCount] in allGamePrompts){
+    console.log("agp in for loop: " ,allGamePrompts.size);
 
-   // if same one fetched and locally submitted
-      while(activeGamePrompts.size < totalPromptsNeeded){
-        for(let [prompt,assignCount] in allGamePrompts){
-          if(assignCount==-1 ){
-            allGamePrompts.set(prompt,0);
-            activeGamePrompts.set(prompt,0);
-            console.log("using prompt from current ", p);
-          }
-        }
-      }
-    
-
-
-  let j =0;
-  let tempPrompt = allGamePrompts.array()[j];
-  let count = allGamePrompts.get(tempPrompt);
-
-  for(let [username,socket] in playersToSockets){
-    if(count<2){
-      socketToPrompt.set(socket,tempPrompt);
-      console.log("assigning ",tempPrompt, " to user ", username);
-      activeGamePrompts.set(tempPrompt,count+1);
-      console.log(tempPrompt,count+1)
-    }else{
-      j++;
-      let tempPrompt = allGamePrompts.array()[j];
-      let count = allGamePrompts.get(tempPrompt);
+    if(assignCount==-1 && i< numbertoKeep){
+      allGamePrompts.set(prompt,0);
+      activeGamePrompts.set(prompt,0)
+      console.log("using prompt from current ", p);
+      i++;
     }
   }
 
+  console.log("acgp: " ,activeGamePrompts.size);
+
+
+  while(activeGamePrompts.size < totalPromptsNeeded){
+    console.log("entered while");
+    for(let [prompt,assignCount] in allGamePrompts){
+      if(assignCount==-1 ){
+        allGamePrompts.set(prompt,0);
+        activeGamePrompts.set(prompt,0);
+        console.log("using prompt from current ", p);
+      }
+    }
+  }
+
+  let j =0;
+  let tempPrompt = Array.from(activeGamePrompts.keys())[j]; 
+  let count = activeGamePrompts.get(tempPrompt);
+  console.log(tempPrompt,count);
+
+  for(let [username,socket] in playersToSockets){
+    console.log(count);
+    // if(count<2){
+    //   console.log("count for ", tempPrompt, " is less than 2");
+    //   socketToPrompt.set(socket,tempPrompt);
+    //   console.log("assigning ",tempPrompt, " to user ", username);
+    //   activeGamePrompts.set(tempPrompt,count+1);
+    //   console.log(tempPrompt,count+1)
+    // }else{
+    //   console.log("count for ", tempPrompt, " is more than 2");
+
+    //   j++;
+    //   let tempPrompt = Array.from(activeGamePrompts.keys())[j]; 
+    //   let count = activeGamePrompts.get(tempPrompt);
+    // }
+
 }
 
-function parsePrompts(resp){
+console.log("finished assignment");
+
+  return result;
+}
+
+
+async function parsePrompts(resp){
+  console.log("parsing retrieved prompts",resp);
     for (var i = 0; i < resp.length; i++) {
       console.log(resp[i].text);
+      allGamePrompts.set(resp[i].text,0)
       activeGamePrompts.set(resp[i].text,0);
     }
+    console.log("parsing  complete ",activeGamePrompts.size);
+    
+    return;
 }
 
 //Handle new connection
@@ -420,7 +445,7 @@ io.on('connection', socket => {
 
   socket.on('promptAnswer', (username,prompt,answer)=>{
     console.log(username, 'answered ',prompt, answer);
-    handleAnswer(prompt,answer,username);
+    handleAnswer(answer,username);
     updateAll();
 
   });
