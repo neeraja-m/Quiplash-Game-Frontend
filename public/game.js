@@ -57,8 +57,8 @@ var app = new Vue({
         login(){ //to login
             console.log("Attempting to login: ", this.username);
             socket.emit('login',this.username,this.password);
-            this.username = '';
-            this.password='';
+            // this.username = '';
+            // this.password='';
         },
         // update(username,toAdd,password){ //to update player stats
         //     socket.emit('update',username,toAdd);
@@ -101,7 +101,7 @@ var app = new Vue({
 
         },
         submitPrompt(){
-            socket.emit('submitPrompt',this.prompt);
+            socket.emit('submitPrompt',this.prompt,this.username,this.password);
             console.log("submitting prompt ",prompt);
             this.prompt='';
         },

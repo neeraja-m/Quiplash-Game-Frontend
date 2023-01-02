@@ -41,10 +41,13 @@ let audienceToSockets = new Map(); //(username,socket)
 let socketsToAudience = new Map(); //(socket,username)
 let gameState = { state: false }; 
 let regSucc= false;
-let activePromptstoVotes = new Map(); //(prompt, true/false) 
+let allGamePrompts = new Map(); //(prompt, number of players assigned to) 
+let activeGamePrompts = new Map();
+let votestoActivePrompts = new Map(); 
 let promptToAnswer = new Map(); //(prompt, (answer,socket)) prompt and who submitted the answer
 let answerToSocket = new Map(); //(answer, socket) 
 let promptToSocket = new Map(); //(prompt,socket) which player was assigned what prompt
+let socketToPrompt = new Map();
 let nextPlayerNumber = 0;
 let numToAll = new Map(); //(player number, username)
 let allToNum = new Map(); //(username, player number)
@@ -197,37 +200,35 @@ function updateIndAud(socket) {
 }
 
 
-function handleSubmitPrompt(prompt,socket){
-  let username="";
-  let password=""; //retrieve from db?
-  console.log("handle submit prompt", prompt);
-  if(isPlayer(socket)){
-    username = socketsToPlayers.get(socket);
-  }else{
-    username = socketsToAudience.get(socket);
-  }
+function handleSubmitPrompt(prompt,socket,username,password){
+
     let payload = {
       "text" : prompt,"username":username,"password":password
   };
 
-  fetch(prefix+'/player/create', {
+  console.log(payload);
+
+  fetch(prefix+'/prompt/create', {
       method: 'POST',
       body: JSON.stringify(payload),
       headers: { 'x-functions-key' : APP_KEY  }
   }).then(res => res.json())
-    .then(json => respHandler(json))
+    .then(json => console.log(json))
     .catch(function(err) {
       console.log(err)
     });
 
-  // if prompt successfully stored:
-  if(isPlayer(socket)){
+  // if prompt successfully stored:::::::::::::::::::::::::::::::::::::::::::::::::::::
+  if(socketsToPlayers.has(socket)){
+    console.log("is player");
     const playerName = socketsToPlayers.get(socket);
     const playerNum = allToNum.get(playerName)
     const thePlayer = playerList.get(playerNum);
     thePlayer.state=2; 
     //if player is in state 2 they need to answer next once sumission done
   }else{
+    console.log("is not player");
+
     const audName = socketsToAudience.get(socket);
     const audNum = allToNum.get(audName)
     const theAud= audienceList.get(audNum);
@@ -235,9 +236,9 @@ function handleSubmitPrompt(prompt,socket){
     //if audience is in state 2 they see the waiting screen until vote
   }
 
-  activePromptstoVotes.set(prompt,false); 
+  allGamePrompts.set(prompt,-1); 
+  // votestoActivePrompts.set(false, prompt);
 
-  assignPrompts();
 }
 
 function handleAnswer(prompt,answer,username){
@@ -250,22 +251,6 @@ function handleVote(username,answer){
   console.log(username,password);
 }
 
-function isPlayer(socketToCheck){
-  let isplayer=false;
-
-  for(let [username,socket] in playerList){
-    if(socketToCheck=socket){
-      isplayer = true;
-    }
-  }
-  for(let [username,socket] in audienceList){
-    if(socketToCheck=socket){
-      isplayer = false;
-    }
-  }
-  return isplayer;
-  
-}
 
 
 function handleAdvance(){
@@ -310,9 +295,10 @@ function handleAdmin(player,action) {
       gameState.state=1;
       console.log(gameState)
       
-  // } else if (action == 'advance' )  {
-  //   console.log( action); 
-  //   handleAdvance();
+  } else if (action == 'advance' && gameState.state==1 )  {
+    gameState.state=2;
+    console.log(gameState)
+    assignPrompts();
   }else {
       console.log('Unknown admin action: ' + action); 
   }
@@ -335,31 +321,79 @@ function startGame(){
 }
 
 function assignPrompts(){
+  console.log("assigning prompts");
   //if 8 players, 4 prompts needed 
    //2 from api, 2 from just submitted
-  let n = playerList.size;
-  let totalPromptsNeeded = Math.ceil(n/2); 
-  let numbertoRetrive =  Math.ceil(totalPromptsNeeded/2);
+ 
   let payload = {
     "prompts":numbertoRetrive};
+  
+  console.log(n, " players ", totalPromptsNeeded, " needed", numbertoRetrive, " retreiving");
+  fetch(prefix+'/prompts/get', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+      headers: { 'x-functions-key' : APP_KEY  }
+  }).then(res => res.json())
+    .then(json => parsePrompts(json))
+    .catch(function(err) {
+      console.log(err)
+    });
 
-fetch(prefix+'/player/get', {
-    method: 'POST',
-    body: JSON.stringify(payload),
-    headers: { 'x-functions-key' : APP_KEY  }
-}).then(res => res.json())
-  .then(json => respHandler(json))
-  .catch(function(err) {
-    console.log(err)
-  });
-  let prompts=[]
-  for(var i in json){
-  console.log(i);
-  prompts.push([i, json_data [i]]);
+
+
+    let n = playerList.size;
+    let totalPromptsNeeded = Math.ceil(n/2); 
+    let numbertoRetrive =  Math.ceil(totalPromptsNeeded/2);
+    let numbertoKeep = totalPromptsNeeded -numbertoRetrive;
+    let i=0;
+
+    for(let [prompt,assignCount] in allGamePrompts){
+      if(assignCount==-1 && i< numbertoKeep){
+        allGamePrompts.set(prompt,0);
+        activeGamePrompts.set(prompt,0)
+        console.log("using prompt from current ", p);
+        i++;
+      }
+    }
+
+   // if same one fetched and locally submitted
+      while(activeGamePrompts.size < totalPromptsNeeded){
+        for(let [prompt,assignCount] in allGamePrompts){
+          if(assignCount==-1 ){
+            allGamePrompts.set(prompt,0);
+            activeGamePrompts.set(prompt,0);
+            console.log("using prompt from current ", p);
+          }
+        }
+      }
+    
+
+
+  let j =0;
+  let tempPrompt = allGamePrompts.array()[j];
+  let count = allGamePrompts.get(tempPrompt);
+
+  for(let [username,socket] in playersToSockets){
+    if(count<2){
+      socketToPrompt.set(socket,tempPrompt);
+      console.log("assigning ",tempPrompt, " to user ", username);
+      activeGamePrompts.set(tempPrompt,count+1);
+      console.log(tempPrompt,count+1)
+    }else{
+      j++;
+      let tempPrompt = allGamePrompts.array()[j];
+      let count = allGamePrompts.get(tempPrompt);
+    }
   }
 
 }
 
+function parsePrompts(resp){
+    for (var i = 0; i < resp.length; i++) {
+      console.log(resp[i].text);
+      activeGamePrompts.set(resp[i].text,0);
+    }
+}
 
 //Handle new connection
 io.on('connection', socket => { 
@@ -378,9 +412,9 @@ io.on('connection', socket => {
 
   });
 
-  socket.on('submitPrompt', (prompt)=>{
+  socket.on('submitPrompt', (prompt,username,password)=>{
     console.log(prompt);
-    handleSubmitPrompt(prompt,socket);
+    handleSubmitPrompt(prompt,socket,username,password);
     updateAll();
   });
 
