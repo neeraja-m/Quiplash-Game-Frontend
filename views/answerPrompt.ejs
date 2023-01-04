@@ -1,4 +1,5 @@
-<div class=" text-center">
+<!-- <div class=" text-center">
+    <div v-if="playerState.playerNumber<8"> 
     <div class="col " style='padding-top:75px ; font-size:18px ; color: #5b3508; text-align: center;'>
         <p style="font-size: 27px; font-weight: bold; margin-bottom: 50px;"> {{prompt}} </p> 
         <input type ="text" v-model="answer" placeholder="Enter your Answer" style="text-align:center; color: #5b3508; background-color: beige; border-radius: 5px; margin-bottom: 50px;width: 700px;" />
@@ -6,10 +7,42 @@
                 <button class="btn btn-lg btn-primary" @click="promptAnswer" style='background-color:rgb(79, 140, 18); border-color: rgb(57, 102, 13); border-width: 2px; margin: 30px;'>SUBMIT</button>
             </div>
     </div>
+    </div>
+    <div v-else>
+        <div class="col " style='padding-top:75px ; font-size:18px ; color: #5b3508; text-align: center;'>
+            <p style="font-size: 27px; font-weight: bold; margin-bottom: 50px;"> Please wait until players have completed answering ... </p> 
+
+    </div>
+    <div v-if="playerState.playerNumber===0">
+        <button class="btn btn-lg btn-success" @click="admin('advance')" style='background-color:rgb(116, 188, 44);  border-color: rgb(93, 152, 35); border-width: 2px; margin: 30px;'>NEXT</button>
+    </div> 
+
+</div> -->
+
+<div class=" text-center">
+    <div v-if="playerState.playerNumber<8">
+            <div class="col " style='padding-top:75px ; font-size:18px ; color: #5b3508; text-align: center;'>
+                <p style="font-size: 27px; font-weight: bold; margin-bottom: 50px;"> {{prompt}} </p> 
+                <input type ="text" v-model="answer" placeholder="Enter your Answer" style="text-align:center; color: #5b3508; background-color: beige; border-radius: 5px; margin-bottom: 50px;width: 700px;" />
+                <div class="=row">
+                        <button class="btn btn-lg btn-primary" @click="promptAnswer" style='background-color:rgb(79, 140, 18); border-color: rgb(57, 102, 13); border-width: 2px; margin: 30px;'>SUBMIT</button>
+                </div>
+            </div>
+    </div>
+
+
+    <div v-else >
+        <div class ="aud">
+            <div class="col " style='padding-top:75px ; font-size:18px ; color: #5b3508; text-align: center;'>
+                <p style="font-size: 20px; font-weight: bold; margin-bottom: 50px;"> Please wait until players have completed answering ... </p> 
+            </div>
+        </div>
+    </div>
+       
     <div v-if="playerState.playerNumber===0">
         <button class="btn btn-lg btn-success" @click="admin('advance')" style='background-color:rgb(116, 188, 44);  border-color: rgb(93, 152, 35); border-width: 2px; margin: 30px;'>NEXT</button>
     </div> 
 
 </div>
 
-<!-- <p>prompt answer</p> -->
+<!-- <p>answer prompt : {{prompt}}</p> -->

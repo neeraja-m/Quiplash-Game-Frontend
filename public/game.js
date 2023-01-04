@@ -17,7 +17,7 @@ var app = new Vue({
         answer:'',
         messages: [],
         chatmessage: '',
-        playerState: { username: '', state: 0, score: 0 ,playerNumber:''},
+        playerState: { username: '', state: 0, score: 0 ,playerNumber:'',prompt:''},
         gameState: { state: false },
         playerList: {},
         audienceList:{},
@@ -35,8 +35,9 @@ var app = new Vue({
         updateState(data){
             this.playerState = data.playerState;
             this.gameState = data.gameState;
-            this.playerList = data.playerList
+            this.playerList = data.playerList;
             this.audienceList = data.audienceList;
+            this.prompt = data.prompt;
         },
         chat() {
             socket.emit('chat',this.chatmessage);
@@ -71,8 +72,8 @@ var app = new Vue({
         },
     
         promptAnswer(){
-            socket.emit('promptAnswer',this.answer,this.username);
-            console.log("Prompt answered by ",username);
+            socket.emit('promptAnswer',this.username,this.prompt,this.answer);
+            console.log("Prompt answered by ", username);
 
         },
         vote(username,answer){
