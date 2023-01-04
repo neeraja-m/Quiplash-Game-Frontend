@@ -21,10 +21,10 @@
                 <%- include('answerPrompt') -%>
             </div>
             <div v-else-if="gameState.state == 3">
-                <%- include('voting') -%>
+                <%- include('answerPrompt') -%>
             </div>
             <div v-else-if="gameState.state == 4">
-                <%- include('revealVotes') -%>
+                <%- include('voting') -%>
             </div>
             <div v-else-if="gameState.state == 5">
                 <%- include('scoreboard') -%>

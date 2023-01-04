@@ -11,6 +11,7 @@ const { ifError } = require('assert');
 const { AsyncLocalStorage } = require('async_hooks');
 const { error } = require('console');
 const { json } = require('express');
+const e = require('express');
 //Set up express
 const express = require('express');
 const app = express();
@@ -43,7 +44,7 @@ let gameState = { state: false };
 let regSucc= false;
 let allGamePrompts = new Map(); //(prompt, number of players assigned to) 
 let activeGamePrompts = new Map();
-let votestoActivePrompts = new Map(); 
+let answersToPrompts = new Map ();
 let promptToAnswer = new Map(); //(prompt, [answer]) prompt and their answers
 let socketToAnswer = new Map(); //(socket, [answer]) who submitted which answers 
 let promptToSocket = new Map(); //(prompt, [socket]) which players are associated with what prompts
@@ -51,7 +52,6 @@ let socketToPrompt = new Map(); //(socket,[prompt]) which player was assigned wh
 let nextPlayerNumber = 0;
 let numToAll = new Map(); //(player number, username)
 let allToNum = new Map(); //(username, player number)
-let answers= [];
 // player states: 0-playing, 1-audience 
 // game states: 0-not started, 1-entering prompts, 2-completed answers, 3-voting round,4-winning 
 
@@ -194,17 +194,26 @@ function updateIndPlayer(socket) {
   const playerName = socketsToPlayers.get(socket);
   const playerNum = allToNum.get(playerName)
   const thePlayer = playerList.get(playerNum);
+
   const playerPrompt = socketToPrompt.get(socket);
-  const data = { gameState: gameState, playerState: thePlayer, playerList: Object.fromEntries(playerList),audienceList: Object.fromEntries(audienceList),prompt: playerPrompt };
+  if(playerPrompt!=undefined){
+    console.log(playerPrompt );
+
+  const data = { gameState: gameState, playerState: thePlayer, playerList: Object.fromEntries(playerList),audienceList: Object.fromEntries(audienceList),answerList: Object.fromEntries(answersToPrompts),prompt: playerPrompt[0] };
   console.log("sending data to ", playerName," with ", data); 
   socket.emit('state',data);
+  }else{
+    const data = { gameState: gameState, playerState: thePlayer, playerList: Object.fromEntries(playerList),audienceList: Object.fromEntries(audienceList),answerList: Object.fromEntries(answersToPrompts),prompt: playerPrompt };
+    console.log("sending data to ", playerName," with ", data); 
+    socket.emit('state',data);
+  }
 }
 
 function updateIndAud(socket) {
   const audName = socketsToAudience.get(socket);
   const audNum = allToNum.get(audName)
   const theAud= audienceList.get(audNum);
-  const data = { gameState: gameState, playerState: theAud, playerList: Object.fromEntries(playerList),audienceList: Object.fromEntries(audienceList),prompt:null }; 
+  const data = { gameState: gameState, playerState: theAud, playerList: Object.fromEntries(playerList),audienceList: Object.fromEntries(audienceList),answerList: Object.fromEntries(answersToPrompts),prompt:null }; 
   console.log("sending data to ", audName," with ", data);
 
   socket.emit('state',data);
@@ -256,39 +265,61 @@ function handleAnswer(socket,prompt,answer,username){
   console.log("handle answer");
   let tempPtoA = promptToAnswer.get(prompt);
   let tempStoA= socketToAnswer.get(socket);
-  let answerList1 = [];
+  answersToPrompts.set(answer,prompt);
   if(tempPtoA==undefined){
-    promptToAnswer.set(prompt,answerList1.push(answer));
+    let answerList1 = [];
+
+    answerList1.push(answer);
+    promptToAnswer.set(prompt,answerList1);
+    console.log("ptoA ", promptToAnswer.get(prompt) );
   }else{
-    promptToAnswer.set(prompt,promptToAnswer.get(prompt).push(answer));
+    let alist = promptToAnswer.get(prompt);
+    alist.push(answer);
+    promptToAnswer.set(prompt,alist);
+    console.log("ptoA ", promptToAnswer.get(prompt) );
+
   }
 
-  let answerList2 = [];
   if(tempStoA==undefined){
-    socketToAnswer.set(socket,answerList2.push(answer));
+    let answerList2 = [];
+
+    answerList2.push(answer);
+    socketToAnswer.set(socket,answerList2);
+    console.log("stoA ", socketToAnswer.get(socket) );
+
   }else{
-    socketToAnswer.set(socket,promptToAnswer.get(socket).push(answer));
+    let blist = socketToAnswer.get(socket);
+    blist.push(answer);
+    promptToAnswer.set(prompt,blist);
+    console.log("stoA ", socketToAnswer.get(socket) );
   }
 
   if(socketToPrompt.get(socket).size == socketToAnswer.get(socket).size ){
     let playerNumber = allToNum.get(username);
-    let playerData = playerList.get(a);
-    playerData.state = 1;
-    //change player state to 3
+    let playerData = playerList.get(playerNumber);
+    playerData.state = 2; //waiting page
   }else{
-
+    console.log("before ",socketToPrompt.get(socket) );
+    playerData.state=1; //get next prompt
+    let a = socketToPrompt.get(socket);
+    let index = a.indexOf(prompt);
+    if (index > -1) { // only splice array when item is found
+    a.splice(index, 1); // 2nd parameter means remove one item only
+    console.log("removing ", prompt, socketToPrompt.get(socket) );
+    }
   }
 
 
 
-
-  
-
 }
 
-function handleVote(username,answer){
+function handleVote(answer){
   console.log("handle vote");
-  console.log(username,password);
+  
+
+
+
+
 }
 
 
@@ -333,16 +364,32 @@ async function handleAdmin(player,action) {
     console.log( "starting game"); 
 
       gameState.state=1;
+      setState(1);
       console.log(gameState)
       
   } else if (action == 'advance' && gameState.state==1 )  {
     let result = await assignPrompts();
     gameState.state=2;
-    console.log(gameState)
+    setState(1);
+
+    console.log(gameState);
+    return;
   }else if( action =='advance' && gameState.state==2 ) {
       //if game state ==2 , and player has answered all prompts, then advance 
-      console.log('Unknown admin action: ' + action); 
+      gameState.state=3;
+      setState(1);
+
+      console.log(gameState)
+  }else if( action =='advance' && gameState.state==3 ) {
+      //if game state ==2 , and player has answered all prompts, then advance 
+      gameState.state=4;
+      setState(1);
+      console.log(gameState)
+    }else{
+    console.log('Unknown admin action: ' + action); 
+
   }
+  
 }
 
 
@@ -374,6 +421,8 @@ async function assignPrompts(){
       console.log(err)
     });
 
+    return;
+    
       
   
 }
@@ -412,15 +461,19 @@ async function helper(json,totalPromptsNeeded,numbertoKeep){
   let tempPrompt = Array.from(activeGamePrompts.keys())[j]; 
   let count = activeGamePrompts.get(tempPrompt);
   console.log(tempPrompt,count);
-  let emptyPrompt1=[]
-  let emptyPrompt2=[]
+
 
   for(let [username,socket] of playersToSockets){
     console.log(username);
     if(count<2){
+      let emptyPrompt1=[];
+      let emptyPrompt2=[];
       console.log("count for ", tempPrompt, " is less than 2");
-      socketToPrompt.set(socket,emptyPrompt1.push(tempPrompt));
-      promptToSocket.set(tempPrompt,emptyPrompt2.push(socket));
+      emptyPrompt1.push(tempPrompt);
+      socketToPrompt.set(socket,emptyPrompt1);
+      console.log("array ",(socketToPrompt.get(socket))[0]);
+      emptyPrompt2.push(socket);
+      promptToSocket.set(tempPrompt,emptyPrompt2);
       console.log("assigning ",tempPrompt, " to user ", username);
       activeGamePrompts.set(tempPrompt,count+1);
       console.log(tempPrompt,count+1)
@@ -431,24 +484,41 @@ async function helper(json,totalPromptsNeeded,numbertoKeep){
       let tempPrompt = Array.from(activeGamePrompts.keys())[j]; 
       let count = activeGamePrompts.get(tempPrompt);
     }
+  };
 
   for(let [prompt,count] of activeGamePrompts){
-    if(count<2){ //if a prompt is only assigned to 1 player
+    if(count<1){ //if a prompt is only assigned to 1 player
       let a = promptToSocket.get(prompt);
       for( let [username,socket] of playersToSockets){
         if(a!=socket){
-          socketToPrompt.set(socket,socketToPrompt.get(socket).push(prompt));
-          promptToSocket.set(prompt,promptToSocket.get(prompt).push(socket));
+          let promptList=socketToPrompt.get(socket);
+          let socketList=promptToSocket.get(prompt);
+          promptList.push(prompt);
+          socketList.push(socket);
+          socketToPrompt.set(socket,promptList);
+          promptToSocket.set(prompt,socketList);
           activeGamePrompts.set(prompt,count+1);
           break;
         }
       }
     }
-  }
+  };
 
- };
+
 
   console.log("finished assignment");
+
+  for(let [username,socket] of playersToSockets){
+    console.log(username);
+
+    const playerNum = allToNum.get(username);
+    console.log(playerNum);
+
+    const thePlayer = playerList.get(playerNum);
+    console.log(thePlayer);
+    thePlayer.state=1; //go to main screen
+  };
+  
   return;
   //return result;
 }
@@ -467,19 +537,19 @@ async function parsePrompts(resp){
 }
 
 
-function startGame(){
+function setState(state){
   //initialise all players
   for(let [username, socket] of playersToSockets){
   const playerName = socketsToPlayers.get(socket);
   const playerNum = allToNum.get(playerName)
   const thePlayer = playerList.get(playerNum);
-  thePlayer.state=1; 
+  thePlayer.state=state; 
   }
   for(let [username,socket] of audienceToSockets){
     const audName = socketsToAudience.get(socket);
     const audNum = allToNum.get(audName)
     const theAud= audienceList.get(audNum);
-    theAud.state=1;
+    theAud.state=state;
   }
 
 }
