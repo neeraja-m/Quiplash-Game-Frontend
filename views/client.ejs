@@ -27,6 +27,9 @@
                 <%- include('voting') -%>
             </div>
             <div v-else-if="gameState.state == 5">
+                <%- include('revealVotes') -%>
+            </div>
+            <div v-else-if="gameState.state == 5">
                 <%- include('scoreboard') -%>
             </div>
         </div>
