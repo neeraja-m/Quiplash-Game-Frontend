@@ -78,6 +78,7 @@ var app = new Vue({
         promptAnswer(){
             socket.emit('promptAnswer',this.username,this.prompt,this.answer);
             console.log("Prompt answered by ", username);
+            this.answer='';
 
         },
         vote(prompt,answer){

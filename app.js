@@ -179,16 +179,13 @@ function updateAll() {
   if(nextPlayerNumber>7){
   for(let [username,socket] of playersToSockets) {
       updateIndPlayer(socket);
-      console.log(username);
   }
   for(let [username,socket] of audienceToSockets) {
     updateIndAud(socket);
-    console.log(username);
   }
   }else{
   for(let [username,socket] of playersToSockets) {
     updateIndPlayer(socket);
-    console.log(username);
   }
   }
 }
@@ -263,60 +260,57 @@ function handleSubmitPrompt(prompt,socket,username,password){
 }
 
 function handleAnswer(socket,prompt,answer,username){
-  console.log("handle answer");
+  console.log("handle answer ",answer, " for prompt ",prompt," by ",username);
   let tempPtoA = promptToAnswer.get(prompt);
   let tempStoA= socketToAnswer.get(socket);
   answersToPrompts.set(answer,prompt);
   if(tempPtoA==undefined){
-    let answerList1 = [];
-
-    answerList1.push(answer);
-    promptToAnswer.set(prompt,answerList1);
+    promptToAnswer.set(prompt,[]);
+    promptToAnswer.get(prompt).push(answer);
     console.log("ptoA ", promptToAnswer.get(prompt) );
   }else{
-    let alist = promptToAnswer.get(prompt);
-    alist.push(answer);
-    promptToAnswer.set(prompt,alist);
+    promptToAnswer.get(prompt).push(answer);
     console.log("ptoA ", promptToAnswer.get(prompt) );
 
   }
 
   if(tempStoA==undefined){
-    let answerList2 = [];
-
-    answerList2.push(answer);
-    socketToAnswer.set(socket,answerList2);
+    
+    socketToAnswer.set(socket,[]);
+    socketToAnswer.get(socket).push(answer);
     console.log("stoA ", socketToAnswer.get(socket) );
 
   }else{
-    let blist = socketToAnswer.get(socket);
-    blist.push(answer);
-    promptToAnswer.set(prompt,blist);
+  
+    socketToAnswer.get(socket).push(answer);
     console.log("stoA ", socketToAnswer.get(socket) );
   }
+  
 
-  console.log(socketToPrompt.get(socket));
 
-  if((socketToPrompt.get(socket)).size == (socketToAnswer.get(socket)).length ){
+  let a = socketToPrompt.get(socket);
+  let index = a.indexOf(prompt);
+  if (index > -1) { // only splice array when item is found
+  a.splice(index, 1); // 2nd parameter means remove one item only
+  console.log("removing ", prompt, socketToPrompt.get(socket) );
+
+
+  if( (socketToPrompt.get(socket)).length==0 ){ //if all prompts answered
+    console.log("stp ",socketToPrompt.get(socket).length);
     let playerNumber = allToNum.get(username);
     let playerData = playerList.get(playerNumber);
     playerData.state = 2; //waiting page
+    console.log(username, " finished answering all prompts ", playerData.state);
   }else{
+    console.log("stp ",socketToPrompt.get(socket).length);
     let playerNumber = allToNum.get(username);
     let playerData = playerList.get(playerNumber);
-    console.log("before ",socketToPrompt.get(socket) );
     playerData.state=1; //get next prompt
-    let a = socketToPrompt.get(socket);
-    let index = a.indexOf(prompt);
-    if (index > -1) { // only splice array when item is found
-    a.splice(index, 1); // 2nd parameter means remove one item only
-    console.log("removing ", prompt, socketToPrompt.get(socket) );
+    updateIndPlayer(socket);
     }
   }
 
-
-
-}
+};
 
 function handleVote(socket,prompt,answer){
   console.log("handle vote for ", prompt, answer);
@@ -417,7 +411,7 @@ async function handleAdmin(player,action) {
       return;
   }
 
-  if(action == 'start' && gameState.state === 0) {
+  if(action == 'start' && gameState.state === 0) {//once everyone has joined
     console.log( "starting game"); 
 
       gameState.state=1;
@@ -425,12 +419,14 @@ async function handleAdmin(player,action) {
       setState(1);
       console.log(gameState)
       
-  } else if (action == 'advance' && gameState.state==1 )  {
+  } else if (action == 'advance' && gameState.state==1 )  {//once all prompts are submitted
     await assignPrompts();
     gameState.state=2;
     setState(1);
     return;
-  }else if( action =='advance' && gameState.state==2 ) {
+  }else if( action =='advance' && gameState.state==2 ) {//once one answer has been submitted
+
+  
       //if game state ==2 , and player has answered all prompts, then advance 
       gameState.state=3;
       setState(1);
