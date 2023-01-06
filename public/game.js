@@ -21,7 +21,7 @@ var app = new Vue({
         gameState: { state: false },
         playerList: {},
         audienceList:{},
-        answerList:{},
+        ifMyPrompt:false,
         promptList:{}
     },
     mounted: function() {
@@ -40,7 +40,7 @@ var app = new Vue({
             this.playerList = data.playerList;
             this.audienceList = data.audienceList;
             this.prompt = data.prompt;
-            this.answerList=data.answerList;
+            this.ifMyPrompt=data.ifMyPrompt;
             this.promptList = data.promptList;
         },
         chat() {

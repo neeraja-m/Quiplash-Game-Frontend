@@ -30,7 +30,12 @@
     <div v-if="playerState.state===1">
 
     <div class="col text-center" style='padding-top:75px ; font-size:18px ; color: #5b3508; text-align: center;'>
+        <div v-if="ifMyPrompt==false">
         <p style="font-size: 30px; font-weight: bold;"> VOTE FOR YOUR FAVOURITE ANSWER </p> 
+        </div>
+        <div v-else>
+        <p style="font-size: 30px; font-weight: bold;"> PLAYERS ARE VOTING ON YOUR PROMPT! </p> 
+        </div>
     </div>
     <div class="row  text-center" style=" margin-top: 50px; margin-bottom: 20px; text-align: center;">
         <!-- <p style="font-weight: bold;color:rgb(79, 140, 18)">PLAYERS</p> -->
@@ -39,7 +44,9 @@
                 <div v-for="a in promptList[1]" class="col-sm-3 text-center" style="text-align: center;">
                     <div class = "col text-center" style="text-align: center;">
                     <p style="color: rgb(25, 91, 113); text-align: center; font-weight: bold;font-size: 18px; margin-top: 50px; "> {{a}} </p>
+                    <div v-if="ifMyPrompt==false">
                     <button class="btn btn-lg btn-success" @click="vote(promptList[0],a)" style='background-color:rgb(79, 140, 18); border-color: rgb(57, 102, 13); border-width: 2px;margin-bottom: 100px;'>VOTE</button>
+                    </div>
                     </div>
                 </div>
             <!-- </div> -->

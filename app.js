@@ -196,14 +196,21 @@ function updateIndPlayer(socket) {
   const playerNum = allToNum.get(playerName)
   const thePlayer = playerList.get(playerNum);
   const promptAnswer =Array.from(promptToAnswer)[0];
-
   const playerPrompt = socketToPrompt.get(socket);
-
+  let isMyPrompt =false;
   let data;
   if(playerPrompt!=undefined){
-    data = { gameState: gameState, playerState: thePlayer, playerList: Object.fromEntries(playerList),audienceList: Object.fromEntries(audienceList),answerList: Object.fromEntries(answersToPrompts),promptList:promptAnswer ,prompt: playerPrompt[0] };
+    if(promptAnswer!=undefined){
+      console.log(promptAnswer[0]);
+      let socketsToCheck = promptToSocket.get(promptAnswer[0]);
+      if(socketsToCheck.includes(socket)){
+        isMyPrompt=true;
+      }
+    }
+   
+    data = { gameState: gameState, playerState: thePlayer, playerList: Object.fromEntries(playerList),audienceList: Object.fromEntries(audienceList),ifMyPrompt:isMyPrompt,promptList:promptAnswer ,prompt: playerPrompt[0] };
   }else{
-    data = { gameState: gameState, playerState: thePlayer, playerList: Object.fromEntries(playerList),audienceList: Object.fromEntries(audienceList),answerList: Object.fromEntries(answersToPrompts),promptList: promptAnswer, prompt: playerPrompt };
+    data = { gameState: gameState, playerState: thePlayer, playerList: Object.fromEntries(playerList),audienceList: Object.fromEntries(audienceList),ifMyPrompt:isMyPrompt,promptList: promptAnswer, prompt: playerPrompt };
   }
 
   socket.emit('state',data);
@@ -216,7 +223,7 @@ function updateIndAud(socket) {
   const audName = socketsToAudience.get(socket);
   const audNum = allToNum.get(audName)
   const theAud= audienceList.get(audNum);
-  const data = { gameState: gameState, playerState: theAud, playerList: Object.fromEntries(playerList),audienceList: Object.fromEntries(audienceList),answerList: Object.fromEntries(answersToPrompts),promptList: Object.fromEntries(promptAnswer),prompt:null }; 
+  const data = { gameState: gameState, playerState: theAud, playerList: Object.fromEntries(playerList),audienceList: Object.fromEntries(audienceList),ifMyPrompt: false,promptList: Object.fromEntries(promptAnswer),prompt:null }; 
   console.log("sending data to ", audName," with ", data);
 
   socket.emit('state',data);
@@ -319,10 +326,11 @@ function handleVote(socket,prompt,answer){
   let socketFound=false;
   let playerVoted = false;
   let tempSockets = promptToSocket.get(prompt); //list containing socket of voted player
-  for(let s in tempSockets){
+  console.log("pta size: ",tempSockets.length);
+  for(let s of tempSockets){
     let tempAnswers = socketToAnswer.get(s); //answers submitted by the socket
 
-    for(a in tempAnswers){
+    for(let a of tempAnswers){
       if(a==answer){
         socketFound=s;
         console.log("found voted player")
@@ -420,38 +428,34 @@ async function handleAdmin(player,action) {
       console.log(gameState)
       
   } else if (action == 'advance' && gameState.state==1 )  {//once all prompts are submitted
-    await assignPrompts();
-    gameState.state=2;
-    setState(1);
-    return;
+      await assignPrompts();
+      gameState.state=2;
+      setState(1);
+      return;
   }else if( action =='advance' && gameState.state==2 ) {//once one answer has been submitted
-
-  
-      //if game state ==2 , and player has answered all prompts, then advance 
       gameState.state=3;
       setState(1);
-
       console.log(gameState)
   }else if( action =='advance' && gameState.state==3  ) { //voting
-
-    if(promptToAnswer.size==0){ //all prompts voted on
-
       gameState.state=4;
+      setState(1);
+      console.log(gameState)
+  }else if(action =='advance' && gameState.state==4){
+    if(promptToAnswer.size==0){ //all prompts voted on show round scores
+      gameState.state=5;
       setState(1);
       console.log(gameState)
     }else{
 
     const promptAnswer =Array.from(promptToAnswer)[0];
-
     promptToAnswer.delete((promptAnswer[0]));
     console.log("deleted prompt ", promptAnswer);
     gameState.state=3;
     setState(1);
     console.log(gameState)
     }
-    if(promptToAnswer.size==0){ //all prompts voted on
-
-      gameState.state=4;
+    if(promptToAnswer.size==0){ //all prompts voted on show round scores
+      gameState.state=5;
       setState(1);
       console.log(gameState)
     };
