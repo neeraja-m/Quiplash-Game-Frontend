@@ -173,8 +173,8 @@ function handleError(socket, message, halt) {
 //update list of prompts?
 function updateAll() {
   console.log('Updating all players');
-  console.log('SocketToPrompt', Array.from(socketToPrompt.keys()).map(socket => socket.id), socketToPrompt.values())
-  console.log('promptToSocket', promptToSocket.keys(), Array.from(promptToSocket.values()).map(sockets => Array.from(sockets).map(socket=>socket.id).flat()))
+  // console.log('SocketToPrompt', Array.from(socketToPrompt.keys()).map(socket => socket.id), socketToPrompt.values())
+  // console.log('promptToSocket', promptToSocket.keys(), Array.from(promptToSocket.values()).map(sockets => Array.from(sockets).map(socket=>socket.id).flat()))
 
   if(nextPlayerNumber>7){
   for(let [username,socket] of playersToSockets) {
@@ -434,9 +434,27 @@ async function handleAdmin(player,action) {
       console.log(gameState)
   }else if( action =='advance' && gameState.state==3  ) { //voting
 
+    if(promptToAnswer.size==0){ //all prompts voted on
+
       gameState.state=4;
       setState(1);
       console.log(gameState)
+    }else{
+
+    const promptAnswer =Array.from(promptToAnswer)[0];
+
+    promptToAnswer.delete((promptAnswer[0]));
+    console.log("deleted prompt ", promptAnswer);
+    gameState.state=3;
+    setState(1);
+    console.log(gameState)
+    }
+    if(promptToAnswer.size==0){ //all prompts voted on
+
+      gameState.state=4;
+      setState(1);
+      console.log(gameState)
+    };
     }else if( action =='advance' && gameState.state==4 ) { //go to next prompt
       if(promptToAnswer.size==0){ //all prompts voted on
 
