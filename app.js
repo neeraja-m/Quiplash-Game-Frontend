@@ -421,14 +421,21 @@ function handleVote(socket,prompt,answer){ //clear socketstovotes at the end of 
 
 };
 
-function handleScore(){ //end of vote
-  
+function handleScore(){ //call in end of vote in handleadmin
+  //when next round starts, add round score to total score and reset round score
+  console.log("handling score");
   for(let [username,socket] of playersToSockets){
   let playerName = socketsToPlayers.get(socket);
   let playerNum = allToNum.get(playerName)
   let thePlayer = playerList.get(playerNum);
-  let votes = socketToVotes.get(socket).length;
+  let votes;
+  if(socketToVotes.has(socket)){
+    votes = socketToVotes.get(socket).length; //check if undefined -> make 0
+  }else{
+    votes = 0; //check if undefined -> make 0
+  }
   thePlayer.score = gameState.round * votes * 100
+  console.log(thePlayer.score);
   }
 
 }
@@ -461,6 +468,49 @@ function respHandler(socket,response){
   }
 }
 
+function handleNextRound(){
+  gameState.state = 1;
+  for(let [username,socket] of playersToSockets){ //reset round score
+    let playerName = socketsToPlayers.get(socket);
+    let playerNum = allToNum.get(playerName)
+    let thePlayer = playerList.get(playerNum);
+    
+    thePlayer.totalscore+=thePlayer.score;
+    thePlayer.score=0;
+    console.log(thePlayer.score, thePlayer.totalscore);
+  }
+  promptToAnswer.clear();
+  socketToAnswer.clear();
+  activeGamePrompts.clear();
+  socketToVotes.clear();
+  answersToPrompts.clear();
+  promptToSocket.clear();
+  socketToPrompt.clear();
+  answerToVotes.clear();
+}
+
+function resetGame(){
+  gameState.round =1; 
+  for(let [username,socket] of playersToSockets){ //reset round score
+    let playerName = socketsToPlayers.get(socket);
+    let playerNum = allToNum.get(playerName)
+    let thePlayer = playerList.get(playerNum);
+    
+    thePlayer.totalscore=0;
+    thePlayer.score=0;
+    console.log(thePlayer.score, thePlayer.totalscore);
+  }
+  promptToAnswer.clear();
+  socketToAnswer.clear();
+  activeGamePrompts.clear();
+  socketToVotes.clear();
+  answersToPrompts.clear();
+  promptToSocket.clear();
+  socketToPrompt.clear();
+  answerToVotes.clear();
+
+
+}
 
 
 async function handleAdmin(player,action) {
@@ -474,7 +524,7 @@ async function handleAdmin(player,action) {
     console.log( "starting game"); 
 
       gameState.state=1;
-      gameState.round=1;
+      gameState.round++;
       setState(1);
       console.log(gameState)
       
@@ -506,6 +556,7 @@ async function handleAdmin(player,action) {
     console.log(gameState)
     }
     if(promptToAnswer.size==0){ //all prompts voted on show round scores
+      handleScore();
       gameState.state=5;
       setState(1);
       console.log(gameState)
@@ -527,6 +578,20 @@ async function handleAdmin(player,action) {
       console.log(gameState)
 
     }
+    }else if( action =='advance' && gameState.state==5 ) {  //TEST THIS!!!!
+        if(gameState.round ==3){ //if all rounds played, go to final scoreboard
+          gameState.state=6; 
+          console.log(gameState);
+        }else{ //go to next round
+          handleNextRound();
+          setState(1);
+          console.log(gameState);
+        }
+    }else if( action =='advance' && gameState.state==6){
+      gameState.state=0;
+      setState(1);
+      console.log(gameState)
+      resetGame(); 
     }else{
     console.log('Unknown admin action: ' + action); 
 

@@ -1,1 +1,20 @@
-<p>final scores!</p>
+<div class="text-center">
+
+    <div class="col text-center" style='padding-top:75px ; font-size:18px ; color: #5b3508; text-align: center;'>
+        <p style="font-size: 30px; font-weight: bold;"> FINAL SCORES! </p> 
+    </div>
+    <div class="row  text-center" style=" margin-top: 20px;  text-align: center;">
+        <!-- <p style="font-weight: bold;color:rgb(79, 140, 18)">PLAYERS</p> -->
+            <!-- <div v-for="(answers,prompt1) in promptList" class="col-sm-3 text-center"> -->
+                <div v-for="player of playerList"  style="text-align: center;">
+                    <div class ="player">
+                    <p style="color: rgb(25, 91, 113); text-align: center; font-weight: bold;font-size: 22px; "> {{player.username}} : {{player.totalscore}} </p>
+                    </div>
+                </div>
+    </div>
+   
+    
+    <div >
+        <button class="btn btn-lg btn-success" @click="admin('advance')" style='background-color:rgb(116, 188, 44);  border-color: rgb(93, 152, 35); border-width: 2px;'>PLAY AGAIN</button>
+    </div> 
+</div>
