@@ -1,21 +1,31 @@
 <!doctype html>
 <html lang="en">
 
-    <%- include('header'); -%>
+<%- include('header'); -%>
 
-    <h2 class="title">QUIPLASH VIEW</h2>
+    <h2 class="title">QUIPLASH</h2>
 
-    <div id="game">
+    <div id="display">
         <div v-if="connected">
-            <ul id="chat">
-                <li v-for="message in messages">{{message}}</li>
-            </ul>
+            <div v-if="gameState.state===false">
+                    <div class="col text-center" style='padding-top:65px ; font-size:18px ; color: #5b3508; text-align: center;'>
+                        <p style="font-size: 27px; font-weight: bold;"> GAME HAS NOT STARTED YET </p>
+                    </div>
+            </div>
+            <div v-else-if="gameState.state === 0">
+                <!-- SAME AS PLAYERS SEE -->
+                <%- include('lobby'); -%>
+            </div>
+            <div v-else-if="gameState.state ===1 ">
+                <!-- DISPLAY WHICH PLAYERS HAVE FINISHED SUBMITTING -->
+                <%- include('submitPromptDisplay'); -%>
+            </div>
         </div>
         <div v-else>
-            <p>Connecting...</p>
+            <p>connecting...</p>
         </div>
     </div>
 
-    <%- include('footer'); -%>
+    <%- include('displayFooter'); -%>
 
 </html>

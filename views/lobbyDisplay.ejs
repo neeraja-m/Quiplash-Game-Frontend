@@ -1,0 +1,25 @@
+
+    <div class="text-center">
+        <div class="col text-center" style='padding-top:65px ; font-size:18px ; color: #5b3508; text-align: center;'>
+            <p style="font-size: 27px; font-weight: bold;"> WAITING FOR PLAYERS </p> 
+
+        <div class="row" style=" margin-top: 50px; ">
+            <p style="font-weight: bold;color:rgb(79, 140, 18)">PLAYERS</p>
+                <div v-for="player of playerList" class="col-sm-3 text-center">
+                    <div class = "player" style="color: rgb(18, 62, 77); text-align: center;">
+                    <p> {{player.username}} </p>
+                    </div>
+                </div>
+        </div>
+        <div class="col text-center" style=" margin-top: 50px; ">
+            <p style="font-weight: bold; color:rgb(79, 140, 18)">AUDIENCE</p>
+            <div v-for="aud of audienceList" class="col-sm-3 text-center">
+                <div class = "aud" style="color: rgb(18, 62, 77); ">
+                    <p> {{aud.username}} </p>
+                </div>
+            </div>
+        </div>
+    
+    </div>
+    </div>
+

@@ -15,7 +15,7 @@ var app = new Vue({
         messages: [],
         chatmessage: '',
         playerState: { username: '', state: 0, score: 0 ,totalScore: 0,playerNumber:'',prompt:''},
-        gameState: { state: false },
+        gameState: { state: false,round:0 },
         playerList: {},
         audienceList:{},
         ifMyPrompt:false,

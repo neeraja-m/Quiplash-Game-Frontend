@@ -41,7 +41,6 @@ let audienceList = new Map(); //holds audience members
 let audienceToSockets = new Map(); //(username,socket)
 let socketsToAudience = new Map(); //(socket,username)
 let gameState = { state: false, round: 0 };
-let regSucc = false;
 let allGamePrompts = new Map(); //(prompt, number of players assigned to) 
 let activeGamePrompts = new Map();
 let promptToAnswer = new Map(); //(prompt, [answer]) prompt and their answers
@@ -53,6 +52,8 @@ let numToAll = new Map(); //(player number, username)
 let allToNum = new Map(); //(username, player number)
 let socketToVotes = new Map();
 let socketToVotesTemp = new Map();
+let displaySocket = null;
+
 // player states: 0-playing, 1-audience 
 // game states: 0-not started, 1-entering prompts, 2-completed answers, 3-voting round,4-winning 
 
@@ -152,13 +153,12 @@ function handleError(socket, message) {
   socket.emit('fail', message);
 }
 
-//Update state of all players
-//update list of prompts?
+
 function updateAll() {
   console.log('Updating all players');
   // console.log('SocketToPrompt', Array.from(socketToPrompt.keys()).map(socket => socket.id), socketToPrompt.values())
   // console.log('promptToSocket', promptToSocket.keys(), Array.from(promptToSocket.values()).map(sockets => Array.from(sockets).map(socket=>socket.id).flat()))
-
+  updateDisplay();
   if (nextPlayerNumber > 7) {
     for (let [username, socket] of playersToSockets) {
       updateIndPlayer(socket);
@@ -695,6 +695,54 @@ async function parsePrompts(resp) {
   }
 }
 
+function updateDisplay(){
+  
+  const promptAnswer = Array.from(promptToAnswer)[0]; //(prompt,[answers]) current one
+
+
+  let isMyPrompt = false;
+  let data;
+  let allVoteInfo = []; 
+  let socketsToCheck;
+  let answers;
+
+    if (promptAnswer != undefined) {
+      console.log(promptAnswer[0]);
+      socketsToCheck = promptToSocket.get(promptAnswer[0]); //[sockets] associated with current prompt
+      answers = promptAnswer[1]//answers to display for current prompt
+      // console.log(socketsToCheck);
+     
+    }
+
+    if (gameState.state > 3) {
+      for (let s in socketsToCheck) {
+        console.log(s);
+        let voteInfo = [];
+        let voteNumber;
+        let smth = socketToAnswer.get(socketsToCheck[s]); //[answers] submitted by answerer
+        const findAnswer = smth.filter(value => answers.includes(value));
+
+        let n = socketsToPlayers.get(socketsToCheck[s]); //username of prompt answerer
+        console.log(n);
+        let ps = socketToVotesTemp.get(socketsToCheck[s]); //usernames of players who voted for that prompt
+        if (ps == undefined) {
+          voteNumber = 0;
+        } else {
+          console.log(ps);
+          voteNumber = ps.length;
+        }
+        voteInfo.push(findAnswer[0], n, voteNumber, ps);
+        allVoteInfo.push(voteInfo);
+        console.log(allVoteInfo);
+      }
+
+    
+  }
+    data = { gameState: gameState,  playerState: {username: '', state: 0, score: 0 ,totalScore: 0,playerNumber:100,prompt:''},playerList: Object.fromEntries(playerList), audienceList: Object.fromEntries(audienceList), ifMyPrompt: isMyPrompt, promptList: promptAnswer,  voteInfo: allVoteInfo };
+  
+  displaySocket.emit('state', data);
+}
+
 
 function setState(state) {
   //initialise all players
@@ -712,9 +760,21 @@ function setState(state) {
   }
 
 }
+
+function setSocket(socket){
+  displaySocket = socket;
+}
 //Handle new connection
 io.on('connection', socket => {
   console.log('New connection');
+
+  socket.on('display', () => {
+  
+    console.log("display client has connected", socket);
+    console.log("before",displaySocket)
+    setSocket(socket);
+    console.log("after",displaySocket)
+  })
 
   socket.on('register', async (username, password) => {
     console.log('registering', username, password);
