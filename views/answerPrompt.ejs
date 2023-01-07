@@ -2,7 +2,7 @@
 <div class=" text-center">
     <div v-if="playerState.state==1">
         <div v-if="playerState.playerNumber<8">
-                    <div class="col " style='padding-top:75px ; font-size:18px ; color: #5b3508; text-align: center;'>
+                    <div class="col " style='padding-top:65px ; font-size:18px ; color: #5b3508; text-align: center;'>
                         <p style="font-size: 27px; font-weight: bold; margin-bottom: 50px;"> {{prompt}} </p> 
                         <input type ="text" v-model="answer" placeholder="Enter your Answer" style="text-align:center; color: #5b3508; background-color: beige; border-radius: 5px; margin-bottom: 50px;width: 700px;" />
                         <div v-if="error">

@@ -94,11 +94,8 @@ var app = new Vue({
         },
         fail(message){
             console.log("reached fail message: ",message)
-            this.error = message;
+            this.error =message;
             setTimeout(() => this.error=null, 3000)
-            // this.error="";
-        
-    
     }}
 });
 
@@ -115,11 +112,6 @@ function connect() {
      
     });
 
-    socket.on('logged', () =>{
-        //Set connected state to true
-        console.log(app.gameState.state);
-
-    });
 
     //Handle connection error
     socket.on('connect_error', function(message) {
@@ -143,7 +135,8 @@ function connect() {
         app.updateState(data);
     });
 
-    socket.on('fail',function(message){
+    socket.on('fail',(message)=>{
+        console.log("reached game.js fail");
         app.fail(message);
     })
 

@@ -1,11 +1,11 @@
 <div class="text-center">
 
-    <div class="col text-center" style='padding-top:75px ; font-size:18px ; color: #5b3508; text-align: center;'>
+    <div class="col text-center" style='padding-top:65px ; font-size:18px ; color: #5b3508; text-align: center;'>
         <p style="font-size: 30px; font-weight: bold;"> VOTE RESULTS! </p> 
     </div>
     <div class="row  text-center" style=" margin-top: 50px; margin-bottom: 20px; text-align: center;">
                 <p  style="color: rgb(18, 62, 77); text-align: center; font-weight: bold; font-size: 25px; "> {{promptList[0]}} </p>
-                <div v-for="a in voteInfo"  style="text-align: center;">
+                <div v-for="a in voteInfo" class="col-sm-3 text-center">
                     <p style="color: rgb(25, 91, 113); text-align: center; font-weight: bold;font-size: 22px; margin-top: 50px; "> {{a[0]}} </p>
                     <p style="color: rgb(25, 91, 113); text-align: center; font-weight: bold;font-size: 18px; margin-top: 20px; "> Asnwered by {{a[1]}} </p>
                     <p style="color: rgb(16, 59, 73); text-align: center; font-weight: bold;font-size: 14px; margin-top: 20px; ">  Votes : {{a[2]}}  </p>

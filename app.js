@@ -85,26 +85,18 @@ async function handleRegister(socket, username, password) {
     headers: { 'x-functions-key': APP_KEY }
   })).json())
 
-
-  //if resp true, pop up
-  if (regSucc) {
-
-
-  }
-  //handleLogin(socket,username,password);
 }
 
 async function handleLogin(socket, username, password) {
   console.log("handle login");
   console.log(username, password);
 
-  let payload = {
+  const payload = {
     "username": username, "password": password
   };
 
-  let error = false
-  //fix error catching
-  let response = respHandler(socket, (await (await fetch(prefix + '/player/login', {
+
+  const response = respHandler(socket, (await (await fetch(prefix + '/player/login', {
     method: 'POST',
     body: JSON.stringify(payload),
     headers: { 'x-functions-key': APP_KEY }
@@ -152,18 +144,12 @@ async function handleLogin(socket, username, password) {
   }
 
 
-  socket.emit('logged');
 
 }
 //Handle errors
-function handleError(socket, message, halt) {
+function handleError(socket, message) {
   console.log('Error: ' + message);
   socket.emit('fail', message);
-  if (halt) {
-    socket.disconnect();
-  } else {
-    //show try again popup
-  }
 }
 
 //Update state of all players
@@ -468,6 +454,7 @@ function respHandler(socket, response) {
 
   if (!respRes)
     throw new Error(respMsg)
+    
 }
 
 function handleNextRound() {
@@ -478,9 +465,9 @@ function handleNextRound() {
     let playerNum = allToNum.get(playerName)
     let thePlayer = playerList.get(playerNum);
 
-    thePlayer.totalscore += thePlayer.score;
+    thePlayer.totalScore += thePlayer.score;
     thePlayer.score = 0;
-    console.log(thePlayer.score, thePlayer.totalscore);
+    console.log(thePlayer.score, thePlayer.totalScore);
   }
   promptToAnswer.clear();
   socketToAnswer.clear();
@@ -497,7 +484,7 @@ function resetGame() {
     let playerNum = allToNum.get(playerName)
     let thePlayer = playerList.get(playerNum);
 
-    thePlayer.totalscore = 0;
+    thePlayer.totalScore = 0;
     thePlayer.score = 0;
     console.log(thePlayer.score, thePlayer.totalscore);
   }
@@ -736,7 +723,7 @@ io.on('connection', socket => {
       updateAll();
     }
     catch(error){
-      handleError(socket, error)
+      handleError(socket, error.message)
     }
   });
 
@@ -748,7 +735,7 @@ io.on('connection', socket => {
     }
     catch (error) {
       console.log('Error', error);
-      handleError(socket, error)
+      handleError(socket, error.message)
     }
 
   });
@@ -761,7 +748,8 @@ io.on('connection', socket => {
     }
     catch (error) {
       console.log('Error', error);
-      handleError(socket, error)
+      handleError(socket, error.message)
+    
     }
   });
 
@@ -785,6 +773,7 @@ io.on('connection', socket => {
     updateAll();
 
   });
+
   socket.on('admin', async action => {
     if (!socketsToPlayers.has(socket)) return;
     updateAll();
@@ -794,7 +783,7 @@ io.on('connection', socket => {
     }
     catch (error) {
       console.log('Error', error);
-      handleError(socket, error)
+      handleError(socket, error.message)
     }
     
   });

@@ -1,7 +1,7 @@
 <div class="text-center">
     <div v-if="playerState.state===1">
 
-    <div class="col text-center" style='padding-top:75px ; font-size:18px ; color: #5b3508; text-align: center;'>
+    <div class="col text-center" style='padding-top:65px ; font-size:18px ; color: #5b3508; text-align: center;'>
         <div v-if="ifMyPrompt==false">
         <p style="font-size: 30px; font-weight: bold;"> VOTE FOR YOUR FAVOURITE ANSWER! </p> 
         </div>
@@ -9,7 +9,7 @@
         <p style="font-size: 30px; font-weight: bold;"> PLAYERS ARE VOTING ON YOUR PROMPT! </p> 
         </div>
     </div>
-    <div class="row  text-center" style=" margin-top: 50px; margin-bottom: 20px; text-align: center;">
+    <div class="col  text-center" style=" margin-top: 50px; margin-bottom: 20px; text-align: center;">
 
                 <p  style="color: rgb(18, 62, 77); text-align: center; font-weight: bold; font-size: 25px; "> {{promptList[0]}} </p>
                 <div v-for="a in promptList[1]" style="text-align: center;">
