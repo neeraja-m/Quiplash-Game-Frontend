@@ -10,18 +10,14 @@
         </div>
     </div>
     <div class="row  text-center" style=" margin-top: 50px; margin-bottom: 20px; text-align: center;">
-        <!-- <p style="font-weight: bold;color:rgb(79, 140, 18)">PLAYERS</p> -->
-            <!-- <div v-for="(answers,prompt1) in promptList" class="col-sm-3 text-center"> -->
+
                 <p  style="color: rgb(18, 62, 77); text-align: center; font-weight: bold; font-size: 25px; "> {{promptList[0]}} </p>
                 <div v-for="a in promptList[1]" style="text-align: center;">
-                    <!-- <div class = "col text-center" style="text-align: center;"> -->
                     <p style="color: rgb(25, 91, 113); text-align: center; font-weight: bold;font-size: 18px; margin-top: 50px; "> {{a}} </p>
                     <div v-if="ifMyPrompt==false">
                     <button class="btn btn-lg btn-success" @click="vote(promptList[0],a)" style='background-color:rgb(79, 140, 18); border-color: rgb(57, 102, 13); border-width: 2px;margin-bottom: 20px;'>VOTE</button>
-                    <!-- </div> -->
                     </div>
                 </div>
-            <!-- </div> -->
     </div>
     </div>
     <div v-else> 

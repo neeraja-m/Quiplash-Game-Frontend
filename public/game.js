@@ -1,9 +1,6 @@
 //CLIENT-SIDE
 
 var socket = null;
-// import fetch from "node-fetch";
-//player states: 0-playing, 1-audience 
-//game states: 0-not started, 1-entering prompts, 2-completed answers, 3-voting round,4-scores 
 
 //Prepare game
 var app = new Vue({
@@ -65,13 +62,9 @@ var app = new Vue({
         login(){ //to login
             console.log("Attempting to login: ", this.username);
             socket.emit('login',this.username,this.password);
-            // this.username = '';
-            // this.password='';
+            
         },
-        // update(username,toAdd,password){ //to update player stats
-        //     socket.emit('update',username,toAdd);
-        //     console.log("Updating ", username, " stats");
-        // },
+    
         leaderboard(n){ //return top n players
             socket.emit('leaderboard',n);
             console.log("Retrieving leaderboard");
@@ -100,8 +93,9 @@ var app = new Vue({
             this.prompt='';
         },
         fail(message){
-            // this.error = message;
-            // setTimeout(clearError,3000);
+            console.log("reached fail message: ",message)
+            this.error = message;
+            setTimeout(() => this.error=null, 3000)
             // this.error="";
         
     
@@ -119,8 +113,6 @@ function connect() {
         app.connected = true;
         console.log(app.gameState.state);
      
-
-
     });
 
     socket.on('logged', () =>{
@@ -144,11 +136,6 @@ function connect() {
     //Handle incoming chat message
     socket.on('chat', function(message) {
         app.handleChat(message);
-    });
-
-    socket.on('homerror',message =>{
-        
-        //show 
     });
 
 
