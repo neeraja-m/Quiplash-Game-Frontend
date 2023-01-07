@@ -1,37 +1,9 @@
-<!-- <div class="text-center">
-    <div v-if="playerState.state===1">
-
-    <div class="col text-center" style='padding-top:75px ; font-size:18px ; color: #5b3508; text-align: center;'>
-        <p style="font-size: 27px; font-weight: bold;"> VOTE FOR YOUR FAVOURITE ANSWER </p> 
-    </div>
-    <div class="row" style=" margin-top: 50px; ">
-            <div v-for="(prompt2,answer) in answerList" class="col-sm-3 text-center">
-                <div class = "prompt">
-                <p  style="color: rgb(18, 62, 77); text-align: center; font-weight: bold; font-size: 23px; "> {{prompt2}} </p>
-                <p  style="color: rgb(25, 91, 113); text-align: center; font-weight: bold;font-size: 18px;"> {{answer}} </p>
-
-                <button class="btn btn-lg btn-success" @click="vote" style='background-color:rgb(79, 140, 18); border-color: rgb(57, 102, 13); border-width: 2px;'>VOTE</button>
-                </div>
-            </div>
-    </div>
-    </div>
-    <div v-else>
-        <div class="col " style='padding-top:75px ; font-size:18px ; color: #5b3508; text-align: center;'>
-            <p style="font-size: 27px; font-weight: bold; margin-bottom: 50px;"> Waiting for other players ... </p> 
-        </div>  
-    </div>
-    
-    <div v-if="playerState.playerNumber===0">
-        <button class="btn btn-lg btn-success" @click="admin('start')" style='background-color:rgb(116, 188, 44);  border-color: rgb(93, 152, 35); border-width: 2px;'>NEXT</button>
-    </div> 
-</div> -->
-
 <div class="text-center">
     <div v-if="playerState.state===1">
 
     <div class="col text-center" style='padding-top:75px ; font-size:18px ; color: #5b3508; text-align: center;'>
         <div v-if="ifMyPrompt==false">
-        <p style="font-size: 30px; font-weight: bold;"> VOTE FOR YOUR FAVOURITE ANSWER </p> 
+        <p style="font-size: 30px; font-weight: bold;"> VOTE FOR YOUR FAVOURITE ANSWER! </p> 
         </div>
         <div v-else>
         <p style="font-size: 30px; font-weight: bold;"> PLAYERS ARE VOTING ON YOUR PROMPT! </p> 
@@ -41,12 +13,12 @@
         <!-- <p style="font-weight: bold;color:rgb(79, 140, 18)">PLAYERS</p> -->
             <!-- <div v-for="(answers,prompt1) in promptList" class="col-sm-3 text-center"> -->
                 <p  style="color: rgb(18, 62, 77); text-align: center; font-weight: bold; font-size: 25px; "> {{promptList[0]}} </p>
-                <div v-for="a in promptList[1]" class="col-sm-3 text-center" style="text-align: center;">
-                    <div class = "col text-center" style="text-align: center;">
+                <div v-for="a in promptList[1]" style="text-align: center;">
+                    <!-- <div class = "col text-center" style="text-align: center;"> -->
                     <p style="color: rgb(25, 91, 113); text-align: center; font-weight: bold;font-size: 18px; margin-top: 50px; "> {{a}} </p>
                     <div v-if="ifMyPrompt==false">
-                    <button class="btn btn-lg btn-success" @click="vote(promptList[0],a)" style='background-color:rgb(79, 140, 18); border-color: rgb(57, 102, 13); border-width: 2px;margin-bottom: 100px;'>VOTE</button>
-                    </div>
+                    <button class="btn btn-lg btn-success" @click="vote(promptList[0],a)" style='background-color:rgb(79, 140, 18); border-color: rgb(57, 102, 13); border-width: 2px;margin-bottom: 20px;'>VOTE</button>
+                    <!-- </div> -->
                     </div>
                 </div>
             <!-- </div> -->

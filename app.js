@@ -192,25 +192,60 @@ function updateAll() {
 
 //Update one player
 function updateIndPlayer(socket) {
+  //find the users who submitted that prompt
+  //for each user find out:
+  //answer,the user who answered the prompt, the users who voted for it, the total  number of votes
+  // const voteNum =  socketToVotes.get(so)
   const playerName = socketsToPlayers.get(socket);
   const playerNum = allToNum.get(playerName)
   const thePlayer = playerList.get(playerNum);
-  const promptAnswer =Array.from(promptToAnswer)[0];
+  const promptAnswer =Array.from(promptToAnswer)[0]; //(prompt,[answers]) current one
   const playerPrompt = socketToPrompt.get(socket);
   let isMyPrompt =false;
   let data;
+  let allVoteInfo=[]; //[[u,vp,vn],[u,vp,vn]]
+  let socketsToCheck;
+  let answers;
+  let tempAnswer;
   if(playerPrompt!=undefined){
     if(promptAnswer!=undefined){
       console.log(promptAnswer[0]);
-      let socketsToCheck = promptToSocket.get(promptAnswer[0]);
+      socketsToCheck = promptToSocket.get(promptAnswer[0]); //[sockets] associated with current prompt
+      answers = promptAnswer[1]//answers to display for current prompt
+      // console.log(socketsToCheck);
       if(socketsToCheck.includes(socket)){
         isMyPrompt=true;
       }
     }
-   
-    data = { gameState: gameState, playerState: thePlayer, playerList: Object.fromEntries(playerList),audienceList: Object.fromEntries(audienceList),ifMyPrompt:isMyPrompt,promptList:promptAnswer ,prompt: playerPrompt[0] };
+  
+    if(gameState.state>3){
+      for(let s in socketsToCheck){
+        console.log(s);
+        let voteInfo=[];
+        let voteNumber;
+        let smth = socketToAnswer.get(socketsToCheck[s]); //[answers] submitted by answerer
+        const findAnswer = smth.filter(value => answers.includes(value));
+
+        let n = socketsToPlayers.get(socketsToCheck[s]); //username of prompt answerer
+        console.log(n);
+        let ps = socketToVotes.get(socketsToCheck[s]); //usernames of players who voted for that prompt
+        if(ps==undefined){
+          voteNumber=0;
+        }else{
+        console.log(ps);
+        voteNumber = ps.length;
+        }
+        voteInfo.push(findAnswer[0],n,voteNumber,ps);
+        allVoteInfo.push(voteInfo);
+        console.log(allVoteInfo);
+      }
+
+
+
+    }
+    data = { gameState: gameState, playerState: thePlayer, playerList: Object.fromEntries(playerList),audienceList: Object.fromEntries(audienceList),ifMyPrompt:isMyPrompt,promptList:promptAnswer ,prompt: playerPrompt[0],voteInfo:allVoteInfo };
   }else{
-    data = { gameState: gameState, playerState: thePlayer, playerList: Object.fromEntries(playerList),audienceList: Object.fromEntries(audienceList),ifMyPrompt:isMyPrompt,promptList: promptAnswer, prompt: playerPrompt };
+    data = { gameState: gameState, playerState: thePlayer, playerList: Object.fromEntries(playerList),audienceList: Object.fromEntries(audienceList),ifMyPrompt:isMyPrompt,promptList: promptAnswer, prompt: playerPrompt ,voteInfo:allVoteInfo};
   }
 
   socket.emit('state',data);
@@ -219,11 +254,29 @@ function updateIndPlayer(socket) {
 function updateIndAud(socket) {
   
   const promptAnswer =Array.from(promptToAnswer)[0];
-
   const audName = socketsToAudience.get(socket);
   const audNum = allToNum.get(audName)
   const theAud= audienceList.get(audNum);
-  const data = { gameState: gameState, playerState: theAud, playerList: Object.fromEntries(playerList),audienceList: Object.fromEntries(audienceList),ifMyPrompt: false,promptList: Object.fromEntries(promptAnswer),prompt:null }; 
+  let allVoteInfo=[]; //[[u,vp,vn],[u,vp,vn]]
+  let socketsToCheck;
+    if(promptAnswer!=undefined){
+      socketsToCheck = promptToSocket.get(promptAnswer[0]);
+    
+      if(socketToVotes.size!=0){
+      for(let s of socketsToCheck){
+        let voteInfo=[];
+        let n = socketsToPlayers.get(s); //username of prompt answerer
+        let ps = socketToVotes.get(s); //usernames of players who voted for that prompt
+        let voteNumber = ps.length;
+        voteInfo.push(n,ps,voteNumber);
+        allVoteInfo.push(voteInfo);
+        console.log(allVoteInfo);
+      }
+    }
+      
+  }
+  
+  const data = { gameState: gameState, playerState: theAud, playerList: Object.fromEntries(playerList),audienceList: Object.fromEntries(audienceList),ifMyPrompt: false,promptList: Object.fromEntries(promptAnswer),prompt:null,voteInfo:allVoteInfo }; 
   console.log("sending data to ", audName," with ", data);
 
   socket.emit('state',data);
@@ -319,12 +372,12 @@ function handleAnswer(socket,prompt,answer,username){
 
 };
 
-function handleVote(socket,prompt,answer){
+function handleVote(socket,prompt,answer){ //clear socketstovotes at the end of each prompt
   console.log("handle vote for ", prompt, answer);
 
   //check is socket is same as voted socket
   let socketFound=false;
-  let playerVoted = false;
+  let votingPlayer = socketsToPlayers.get(socket);//gets the username of the player who voted
   let tempSockets = promptToSocket.get(prompt); //list containing socket of voted player
   console.log("pta size: ",tempSockets.length);
   for(let s of tempSockets){
@@ -345,17 +398,15 @@ function handleVote(socket,prompt,answer){
     //throw error -- vote again
   }else{
 
-    if(socketToVotes.has(socket)){
-      let v1 = socketToVotes.get(socketFound);
-      socketToVotes.set(socketFound,v1+1);
+    if(socketToVotes.has(socketFound)){
+      socketToVotes.get(socketFound).push(votingPlayer);
     }else{
-      socketToVotes.set(socketFound,1);
+      socketToVotes.set(socketFound,[votingPlayer]);
     }
     if(answerToVotes.has(answer)){
-      let v2 = answerToVotes.get(answer);
-      answerToVotes.set(answer,v2+1);
+      answerToVotes.get(answer).push(votingPlayer);
     }else{
-      answerToVotes.set(answer,1);
+      answerToVotes.set(answer,[votingPlayer]);
     }
 
     
@@ -370,13 +421,13 @@ function handleVote(socket,prompt,answer){
 
 };
 
-function handleScore(){
+function handleScore(){ //end of vote
   
   for(let [username,socket] of playersToSockets){
   let playerName = socketsToPlayers.get(socket);
   let playerNum = allToNum.get(playerName)
   let thePlayer = playerList.get(playerNum);
-  let votes = socketToVotes.get(socket);
+  let votes = socketToVotes.get(socket).length;
   thePlayer.score = gameState.round * votes * 100
   }
 
@@ -482,6 +533,7 @@ async function handleAdmin(player,action) {
   }
 }
 
+//readd check for if not enough prompts eg. if no prompts in db
 async function assignPrompts(){
 
   console.log("assigning prompts");

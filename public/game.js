@@ -17,12 +17,13 @@ var app = new Vue({
         answer:'',
         messages: [],
         chatmessage: '',
-        playerState: { username: '', state: 0, score: 0 ,playerNumber:'',prompt:''},
+        playerState: { username: '', state: 0, score: 0 ,totalScore: 0,playerNumber:'',prompt:''},
         gameState: { state: false },
         playerList: {},
         audienceList:{},
         ifMyPrompt:false,
-        promptList:{}
+        promptList:{},
+        voteInfo:''
     },
     mounted: function() {
         connect(); 
@@ -42,6 +43,7 @@ var app = new Vue({
             this.prompt = data.prompt;
             this.ifMyPrompt=data.ifMyPrompt;
             this.promptList = data.promptList;
+            this.voteInfo = data.voteInfo;
         },
         chat() {
             socket.emit('chat',this.chatmessage);
