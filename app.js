@@ -54,7 +54,7 @@ let allToNum = new Map(); //(username, player number)
 let socketToVotes = new Map();
 let socketToVotesTemp = new Map();
 let displaySocket = null;
-
+let reg = false;
 // player states: 0-playing, 1-audience 
 // game states: 0-not started, 1-entering prompts, 2-completed answers, 3-voting round,4-winning 
 
@@ -76,7 +76,7 @@ function handleChat(message) {
 async function handleRegister(socket, username, password) {
   console.log("handle register");
   console.log(username, password);
-
+  reg =true;
   const payload = {
     "username": username, "password": password
   };
@@ -461,8 +461,13 @@ function respHandler(socket, response) {
   let respRes = response.result;
   console.log("handling response: ", respMsg);
 
-  if (!respRes)
+  if (!respRes){
     throw new Error(respMsg)
+  }
+  if(reg && respRes){
+    socket.emit('regSucc');
+    reg=false;
+  }
     
 }
 

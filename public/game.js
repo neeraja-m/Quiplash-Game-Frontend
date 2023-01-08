@@ -62,7 +62,8 @@ var app = new Vue({
         login(){ //to login
             console.log("Attempting to login: ", this.username);
             socket.emit('login',this.username,this.password);
-            
+            this.username = '';
+            this.password='';
         },
         promptAnswer(){
             socket.emit('promptAnswer',this.username,this.prompt,this.answer);
@@ -113,6 +114,11 @@ function connect() {
     socket.on('disconnect', function() {
         alert('Disconnected');
         app.connected = false;
+    });
+
+    socket.on('regSucc', ()=>{
+        app.fail("Successful registration - please login to start playing");
+
     });
 
     //Handle incoming chat message
