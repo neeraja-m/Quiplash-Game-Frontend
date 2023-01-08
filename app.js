@@ -48,6 +48,7 @@ let socketToAnswer = new Map(); //(socket, [answer]) who submitted which answers
 let promptToSocket = new Map(); //(prompt, [socket]) which players are associated with what prompts
 let socketToPrompt = new Map(); //(socket,[prompt]) which player was assigned what prompts
 let nextPlayerNumber = 0;
+let afterJoinAssign = nextPlayerNumber+10;
 let numToAll = new Map(); //(player number, username)
 let allToNum = new Map(); //(username, player number)
 let socketToVotes = new Map();
@@ -103,15 +104,13 @@ async function handleLogin(socket, username, password) {
     headers: { 'x-functions-key': APP_KEY }
   })).json()))
 
-  //if successful login and game not started yet, add to playerlist, set player number, set player socket, set game state
-  //if successful login:
   if ((gameState.state != false) || (gameState.state != 0)) { //make audience member
     console.log("Game has already begun")
-    audienceList.set(nextPlayerNumber, { username: username, state: 1, score: 0, playerNumber: nextPlayerNumber });
-    allToNum.set(username, nextPlayerNumber);
-    numToAll.set(nextPlayerNumber, username);
-    gameState.state = 0;
-    nextPlayerNumber++;
+    audienceList.set(afterJoinAssign, { username: username, state: 1, score: 0, playerNumber: afterJoinAssign });
+    allToNum.set(username, afterJoinAssign);
+    numToAll.set(afterJoinAssign, username);
+  
+    afterJoinAssign++;
     audienceToSockets.set(username, socket);
     socketsToAudience.set(socket, username);
     return;
@@ -156,10 +155,10 @@ function handleError(socket, message) {
 
 function updateAll() {
   console.log('Updating all players');
-  // console.log('SocketToPrompt', Array.from(socketToPrompt.keys()).map(socket => socket.id), socketToPrompt.values())
-  // console.log('promptToSocket', promptToSocket.keys(), Array.from(promptToSocket.values()).map(sockets => Array.from(sockets).map(socket=>socket.id).flat()))
+  if(displaySocket!=null ||displaySocket!=undefined  ){
   updateDisplay();
-  if (nextPlayerNumber > 7) {
+  }
+  if (audienceList.size>0) { //if audience exist update them too
     for (let [username, socket] of playersToSockets) {
       updateIndPlayer(socket);
     }
@@ -277,7 +276,7 @@ function updateIndAud(socket) {
 
   }
 
-  const data = { gameState: gameState, playerState: theAud, playerList: Object.fromEntries(playerList), audienceList: Object.fromEntries(audienceList), ifMyPrompt: false, promptList: Object.fromEntries(promptAnswer), prompt: null, voteInfo: allVoteInfo };
+  const data = { gameState: gameState, playerState: theAud, playerList: Object.fromEntries(playerList), audienceList: Object.fromEntries(audienceList), ifMyPrompt: false, promptList: promptAnswer, prompt: null, voteInfo: allVoteInfo };
   console.log("sending data to ", audName, " with ", data);
 
   socket.emit('state', data);
@@ -374,7 +373,12 @@ function handleVote(socket, prompt, answer) { //clear socketstovotes at the end 
 
   //check is socket is same as voted socket
   let socketFound = false;
-  let votingPlayer = socketsToPlayers.get(socket);//gets the username of the player who voted
+  let votingPlayer;
+  if(socketsToPlayers.has(socket)){
+  votingPlayer = socketsToPlayers.get(socket);//gets the username of the player who voted
+  }else{
+    votingPlayer = socketsToAudience.get(socket)
+  }
   let tempSockets = promptToSocket.get(prompt); //list containing socket of voted player
   console.log("pta size: ", tempSockets.length);
   for (let s of tempSockets) {
@@ -405,12 +409,17 @@ function handleVote(socket, prompt, answer) { //clear socketstovotes at the end 
   }
 
 
-
+  if(socketsToPlayers.has(socket)){
   let playerName = socketsToPlayers.get(socket);
   let playerNum = allToNum.get(playerName)
   let thePlayer = playerList.get(playerNum);
   thePlayer.state = 2; //done voting, waiting for next prompt
-
+  }else if(socketsToAudience.has(socket)){
+    let audName = socketsToAudience.get(socket);
+    let audNum = allToNum.get(audName)
+    let theAud = audienceList.get(audNum);
+    theAud.state = 2; 
+  }
 
 
 };
@@ -464,7 +473,10 @@ function handleNextRound() {
     let playerName = socketsToPlayers.get(socket);
     let playerNum = allToNum.get(playerName)
     let thePlayer = playerList.get(playerNum);
-
+    console.log(thePlayer.score, thePlayer.totalScore);
+  if( isNaN(thePlayer.totalScore)){
+    thePlayer.totalScore=0;
+  }
     thePlayer.totalScore += thePlayer.score;
     thePlayer.score = 0;
     console.log(thePlayer.score, thePlayer.totalScore);
@@ -553,6 +565,15 @@ async function handleAdmin(player, action) {
     };
   } else if (action == 'advance' && gameState.state == 5) {  //TEST THIS!!!!
     if (gameState.round == 3) { //if all rounds played, go to final scoreboard
+      for (let [username, socket] of playersToSockets) { //reset round score
+        let playerName = socketsToPlayers.get(socket);
+        let playerNum = allToNum.get(playerName)
+        let thePlayer = playerList.get(playerNum);
+     
+        thePlayer.totalScore += thePlayer.score;
+        thePlayer.score=0;
+        console.log("final score: ", thePlayer.totalScore);
+      }
       gameState.state = 6;
       console.log(gameState);
     } else { //go to next round

@@ -1,14 +1,23 @@
 <div class="text-center">
     <div class="col text-center" style='padding-top:65px ; font-size:18px ; color: #5b3508; text-align: center;'>
-        <p style="font-size: 30px; font-weight: bold;"> PLAYES READY TO MOVE ON </p>
+        <p style="font-size: 30px; font-weight: bold;"> PLAYERS READY TO MOVE ON :</p>
     </div>
     <div class="row  text-center" style=" margin-top: 20px;  text-align: center;">
 
         <div v-for="player of playerList" style="text-align: center;">
             <div class="player">
-                <div v-if="player.state==1"></div>
+                <div v-if="player.state==2">
                 <p style="color: rgb(25, 91, 113); text-align: center; font-weight: bold;font-size: 22px; ">
                     {{player.username}} </p>
+                </div>
+            </div>
+        </div>
+        <div v-for="aud of audienceList" style="text-align: center;">
+            <div class="player">
+                <div v-if="aud.state==2">
+                <p style="color: rgb(25, 91, 113); text-align: center; font-weight: bold;font-size: 22px; ">
+                    {{aud.username}} </p>
+                </div>
             </div>
         </div>
     </div>

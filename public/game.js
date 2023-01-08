@@ -64,12 +64,6 @@ var app = new Vue({
             socket.emit('login',this.username,this.password);
             
         },
-    
-        leaderboard(n){ //return top n players
-            socket.emit('leaderboard',n);
-            console.log("Retrieving leaderboard");
-        },
-    
         promptAnswer(){
             socket.emit('promptAnswer',this.username,this.prompt,this.answer);
             this.answer='';
@@ -82,11 +76,7 @@ var app = new Vue({
             console.log("Players voted for ",answer);
 
         },
-        advance(){
-            socket.emit('advance');
-            console.log("Advancing game");
-
-        },
+    
         submitPrompt(){
             socket.emit('submitPrompt',this.prompt,this.username,this.password);
             console.log("submitting prompt ",prompt);
