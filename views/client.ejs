@@ -1,16 +1,17 @@
 <!doctype html>
 <html lang="en">
 
-    <%- include('header'); -%>
+<%- include('header'); -%>
 
     <h2 class="title">QUIPLASH</h2>
 
+
     <div id="game">
         <!-- <p>{{gameState}}</p> -->
-        
-        <div v-if="connected" >
-            <div v-if="gameState.state===false" >
-                 <%- include('homescreen'); -%> 
+
+        <div v-if="connected">
+            <div v-if="gameState.state===false">
+                <%- include('homescreen'); -%>
             </div>
             <div v-else-if="gameState.state === 0">
                 <%- include('lobby'); -%>

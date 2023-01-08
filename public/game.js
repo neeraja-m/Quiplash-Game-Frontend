@@ -62,8 +62,7 @@ var app = new Vue({
         login(){ //to login
             console.log("Attempting to login: ", this.username);
             socket.emit('login',this.username,this.password);
-            this.username = '';
-            this.password='';
+         
         },
         promptAnswer(){
             socket.emit('promptAnswer',this.username,this.prompt,this.answer);
