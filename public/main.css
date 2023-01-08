@@ -1,4 +1,5 @@
 body {
+    /* Background Image by @stockgiu on Freepik "https://www.freepik.com/free-vector/arcade-game-world-pixel-scene_4815143.htm#query=pixel%20background&position=1&from_view=search&track=sph" */
     background-image: url('/static/background1.jpg');
     background-size: cover;
     background-repeat: no-repeat;    /* background-color: #acc5d0; */
@@ -85,7 +86,7 @@ body {
   
   }
 
-  .btn-primary:hover{
+  .btn-primary:focus{
     border-radius: 10px;
     /* transform: scale(1.3); */
     animation-name: rotateButton;

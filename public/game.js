@@ -2,6 +2,9 @@
 
 var socket = null;
 
+// Background Image by @stockgiu on Freepik "https://www.freepik.com/free-vector/arcade-game-world-pixel-scene_4815143.htm#query=pixel%20background&position=1&from_view=search&track=sph"
+
+
 //Prepare game
 var app = new Vue({
     el: '#game',
