@@ -153,6 +153,7 @@ function handleError(socket, message) {
 }
 
 
+
 function updateAll() {
   console.log('Updating all players');
   if(displaySocket!=null ||displaySocket!=undefined  ){

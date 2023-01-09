@@ -2,8 +2,8 @@
 
 var socket = null;
 
-// Background Image by @stockgiu on Freepik "https://www.freepik.com/free-vector/arcade-game-world-pixel-scene_4815143.htm#query=pixel%20background&position=1&from_view=search&track=sph"
-
+// Background Image by stockgiu on Freepik "https://www.freepik.com/free-vector/arcade-game-world-pixel-scene_4815143.htm#query=pixel%20background&position=1&from_view=search&track=sph"
+// Music by Dream-Protocol from Pixabay "https://pixabay.com//?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=music&amp;utm_content=116846"
 
 //Prepare game
 var app = new Vue({
@@ -11,6 +11,7 @@ var app = new Vue({
     data: {
         connected: false,
         error:false,
+        audio:false,
         prompt:'',
         username:'',
         password:'',
@@ -89,7 +90,30 @@ var app = new Vue({
             console.log("reached fail message: ",message)
             this.error =message;
             setTimeout(() => this.error=null, 3000)
-    }}
+        
+    },
+    handleMusic() 
+        {
+            let audio = this.$refs.audio;
+            document.querySelector(".toggle-sound").classList.add("pausedAudio");
+            if (
+                audio.paused &&
+                document.querySelector(".toggle-sound").classList.contains("pausedAudio")
+            )
+            {
+                audio.play();
+                this.audio = true;
+                document.querySelector(".toggle-sound").classList.remove("pausedAudio");
+            } else
+            {
+                audio.pause();
+                this.audio = false;
+                document.querySelector(".toggle-sound").classList.add("pausedAudio");
+            }
+        },
+}
+
+    
 });
 
 function connect() {
@@ -137,6 +161,7 @@ function connect() {
         console.log("reached game.js fail");
         app.fail(message);
     })
+
 
 
 

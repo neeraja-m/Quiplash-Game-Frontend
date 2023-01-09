@@ -4,12 +4,24 @@
 <%- include('header'); -%>
 
     <h2 class="title">QUIPLASH</h2>
-
-
+    
     <div id="game">
         <!-- <p>{{gameState}}</p> -->
 
         <div v-if="connected">
+
+            <div class="music">
+                <div class="toggle-sound">
+                    <button class="btn btn-success" style='background-color:rgb(20, 102, 107);  border-color: rgb(245, 245, 245); border-width: 2px; border-radius: 10px;' v-if="audio==true" v-on:click="handleMusic()">
+                        MUTE
+                    </button>
+                    <button class="btn btn-success" style='background-color:rgb(20, 102, 107);  border-color: rgb(255, 255, 255); border-width: 2px; border-radius: 10px;' v-else v-on:click="handleMusic()">
+                        UNMUTE
+                    </button>
+                </div>
+                <audio ref="audio" src="static/game_music.mp3" loop id="audio"></audio>
+            </div>
+        
             <div v-if="gameState.state===false">
                 <%- include('homescreen'); -%>
             </div>
